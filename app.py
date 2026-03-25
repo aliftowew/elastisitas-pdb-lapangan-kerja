@@ -202,30 +202,31 @@ fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terha
 st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
 
 # ==========================================
-# 7. INJEKSI CSS UNTUK FOOTER DENGAN BACKGROUND LOKAL (OPACITY 40%)
+# 7. INJEKSI CSS UNTUK FOOTER DENGAN BACKGROUND LOKAL (EFEK OPACITY 40%)
 # ==========================================
 
-# Fungsi untuk membaca file lokal image5.png
+# Fungsi untuk membaca file lokal
 def get_base64_image(file_name):
     try:
         with open(file_name, "rb") as f:
             data = f.read()
         return base64.b64encode(data).decode()
     except Exception:
-        return "" # Mengembalikan string kosong jika file belum diupload/tidak ditemukan
+        return "" # Mengembalikan string kosong jika file tidak ditemukan
 
-# Panggil fungsinya untuk image5.png
+# PASTIKAN NAMA FILE DI BAWAH INI SAMA PERSIS DENGAN YANG DI GITHUB
+# Jika Anda tetap pakai nama aslinya, ganti "image5.png" menjadi "1000547698.png"
 bg_image_base64 = get_base64_image("image5.png")
 
 st.markdown(
     f"""
     <style>
-    /* Menghilangkan padding bawah bawaan Streamlit agar footer full-width */
+    /* Menghilangkan padding bawah bawaan Streamlit */
     .block-container {{
         padding-bottom: 0rem !important;
     }}
     
-    /* Kontainer Footer Utama */
+    /* Kontainer Footer Utama dengan Trik Overlay Gradient */
     .math-footer-bg {{
         width: 100vw;
         position: relative;
@@ -234,27 +235,15 @@ st.markdown(
         margin-left: -50vw;
         margin-right: -50vw;
         margin-top: 50px;
+        /* Trik Anti-Gagal: Menumpuk warna putih transparan (0.6) di atas gambar */
+        background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url("data:image/png;base64,{bg_image_base64}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: repeat;
         padding: 80px 20px; 
         display: flex;
         justify-content: center;
         align-items: center;
-        overflow: hidden; /* Mencegah background luber keluar kontainer */
-    }}
-    
-    /* Trik Pseudo-element: Mengatur opacity KHUSUS untuk gambar background */
-    .math-footer-bg::before {{
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: url("data:image/png;base64,{bg_image_base64}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: repeat;
-        opacity: 0.4; /* Ini setting Opacity 40% nya */
-        z-index: -1; /* Memastikan background selalu ada di belakang kotak putih */
     }}
     
     /* Kotak Putih Melayang di Tengah */
