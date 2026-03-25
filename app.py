@@ -1,91 +1,195 @@
 import streamlit as st
+import pandas as pd
 import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import io
 
-# Konfigurasi Halaman
-st.set_page_config(page_title="Kalkulator Makroekonomi", layout="centered")
+# ==========================================
+# 1. KONFIGURASI HALAMAN & FUNGSI BANTUAN
+# ==========================================
+st.set_page_config(page_title="Kalkulator Makroekonomi", layout="wide")
 
+# Fungsi untuk format angka ribuan ala Indonesia (titik)
+def format_indo(angka):
+    return f"{angka:,.0f}".replace(",", ".")
+
+# ==========================================
+# 2. DATASET HISTORIS (1986-2025)
+# ==========================================
+# Menyematkan data langsung agar tabel muncul di website
+data_mentah = """Tahun	PDB Growth (%)	Penduduk Bekerja (L)	Nilai PDB (Y) (basis 1986=100)	Pembentukan Modal Tetap Bruto (K)	ln Y	ln L	ln K
+1986	5,88	65655030	105,88	26,2	4,6623	17,9999	3,2657
+1987	4,93	67878350	111,10	31,42	4,7104	18,0332	3,4474
+1988	5,78	69828230	117,52	38,36	4,7666	18,0615	3,6470
+1989	7,46	70743560	126,29	47,71	4,8385	18,0745	3,8651
+1990	7,24	75850000	135,43	59,76	4,9084	18,1442	4,0903
+1991	8,93	76420000	147,52	67,49	4,9939	18,1517	4,2119
+1992	6,52	78520000	157,15	72,77	5,0571	18,1788	4,2873
+1993	7,96	79200000	169,65	86,67	5,1337	18,1874	4,4621
+1994	7,54	82040000	182,44	105,38	5,2064	18,2227	4,6575
+1995	8,22	80110000	197,44	129,22	5,2854	18,1989	4,8615
+1996	7,82	85702000	212,87	157,65	5,3606	18,2663	5,0603
+1997	4,70	87050000	222,88	177,69	5,4066	18,2819	5,1800
+1998	-13,13	87672000	193,62	243,04	5,2659	18,2891	5,4932
+1999	0,79	88817000	195,15	221,47	5,2737	18,3020	5,4002
+2000	4,92	89837700	204,75	275,88	5,3218	18,3135	5,6199
+2001	3,64	90807400	212,22	323,88	5,3576	18,3242	5,7803
+2002	4,50	91647200	221,76	353,97	5,4016	18,3334	5,8692
+2003	4,78	90784900	232,36	392,79	5,4483	18,3240	5,9732
+2004	5,03	93722000	244,05	515,38	5,4973	18,3558	6,2449
+2005	5,69	94453000	257,95	655,85	5,5527	18,3636	6,4859
+2006	5,50	95317000	272,14	805,79	5,6063	18,3727	6,6918
+2007	6,35	98757000	289,40	985,63	5,6678	18,4081	6,8932
+2008	6,01	102301000	306,81	11370	5,7262	18,4434	7,2225
+2009	4,70	104678000	321,23	1740	5,7721	18,4663	7,4616
+2010	6,38	107807000	341,72	2130	5,8339	18,4958	7,6638
+2011	6,17	110475000	362,80	2450	5,8938	18,5203	7,8038
+2012	6,03	111806000	384,68	2820	5,9524	18,5322	7,9444
+2013	5,56	110800000	406,06	3050	6,0065	18,5232	8,0228
+2014	5,01	114610000	426,39	3440	6,0553	18,5570	8,1432
+2015	4,88	114800000	447,18	3780	6,1029	18,5587	8,2374
+2016	5,03	118410000	469,69	4040	6,1520	18,5896	8,3039
+2017	5,07	121020000	493,50	4370	6,2015	18,6114	8,3825
+2018	5,17	124010000	519,04	4790	6,2519	18,6358	8,4742
+2019	5,02	126510000	545,09	5120	6,3009	18,6558	8,5409
+2020	-2,07	128450000	533,83	4900	6,2800	18,6710	8,4969
+2021	3,70	131050000	553,60	5230	6,3164	18,6910	8,5621
+2022	5,31	135300000	582,98	5696	6,3681	18,7230	8,6475
+2023	5,05	139850000	612,41	6090	6,4174	18,7560	8,7145
+2024	5,03	144640000	643,22	6452	6,4664	18,7897	8,7722
+2025	5,11	146540000	676,08	6852	6,5163	18,8028	8,8323"""
+
+df = pd.read_csv(io.StringIO(data_mentah), sep='\t', decimal=',')
+df['Tahun'] = df['Tahun'].astype(str) # Agar tahun tidak pakai koma ribuan
+
+# ==========================================
+# 3. HEADER & PENJELASAN METODE
+# ==========================================
 st.title("Dashboard Elastisitas PDB & Tenaga Kerja Indonesia 🇮🇩")
 st.write("Analisis data historis (1986-2025) untuk mengukur hubungan dua arah antara Pertumbuhan Ekonomi (PDB) dan Serapan Tenaga Kerja.")
 
 st.markdown("---")
-
-# Bagian Penjelasan Metode & Rumus
 st.header("Metodologi & Rumus Pendekatan")
+st.write("Analisis ini menggunakan pendekatan ekonometrika untuk mendapatkan parameter struktural yang stabil, meninggalkan batas volatilitas dari metode persentase deskriptif biasa.")
 
-st.markdown("""
-Analisis ini tidak sekadar menggunakan persentase deskriptif biasa, melainkan menggunakan pendekatan ekonometrika untuk mendapatkan parameter struktural yang stabil.
+col_teori1, col_teori2 = st.columns(2)
 
-### 1. Sisi Permintaan (Elastisitas Kesempatan Kerja)
-Mengukur berapa banyak lapangan kerja yang tercipta akibat pertumbuhan ekonomi. Kami menggunakan regresi linier OLS model *double-log*:
+with col_teori1:
+    st.subheader("1. Sisi Permintaan (Elastisitas Kesempatan Kerja)")
+    st.write("Mengukur berapa banyak lapangan kerja yang tercipta akibat pertumbuhan ekonomi menggunakan regresi linier OLS model *double-log*:")
+    # Sintaks LaTeX diperbaiki menggunakan st.latex
+    st.latex(r"\ln L = b_0 + b_1 \ln Y")
+    st.markdown("""
+    * **L** = Jumlah Penduduk Bekerja
+    * **Y** = Indeks PDB
+    * **b₁** = Koefisien Elastisitas (**0,4065**)
+    
+    **Kesimpulan:** Setiap pertumbuhan 1% PDB membuka **0,407%** lapangan kerja baru.
+    """)
 
-$$ \ln L = b_0 + b_1 \ln Y $$
-
-* **L** = Jumlah Penduduk Bekerja
-* **Y** = Indeks PDB
-* **b₁** = Koefisien Elastisitas (Hasil data historis: **0,4065**)
-
-**Kesimpulan:** Setiap pertumbuhan 1% PDB membuka **0,407%** lapangan kerja baru.
-
-### 2. Sisi Penawaran (Fungsi Produksi Cobb-Douglas)
-Mengukur seberapa besar kontribusi tenaga kerja terhadap penciptaan PDB itu sendiri. Kami menggunakan Fungsi Produksi Cobb-Douglas yang ditransformasi menjadi model log-linier berganda:
-
-$$ \ln Y = \ln A + \alpha \ln K + \beta \ln L $$
-
-* **K** = Kapital / Pembentukan Modal Tetap Bruto (PMTB)
-* **β** = Elastisitas Output Tenaga Kerja (Hasil data historis: **1,7311**)
-
-**Kesimpulan:** Setiap penambahan 1% jumlah pekerja berkontribusi pada pertumbuhan PDB sebesar **1,7311%** (dengan asumsi kapital konstan).
-""")
+with col_teori2:
+    st.subheader("2. Sisi Penawaran (Fungsi Produksi Cobb-Douglas)")
+    st.write("Mengukur kontribusi tenaga kerja terhadap penciptaan PDB menggunakan Fungsi Produksi log-linier berganda:")
+    # Sintaks LaTeX diperbaiki menggunakan st.latex
+    st.latex(r"\ln Y = \ln A + \alpha \ln K + \beta \ln L")
+    st.markdown("""
+    * **K** = Kapital / Modal Tetap Bruto (PMTB)
+    * **β** = Elastisitas Output Tenaga Kerja (**1,7311**)
+    
+    **Kesimpulan:** Setiap penambahan 1% jumlah pekerja berkontribusi menaikkan PDB sebesar **1,7311%** (asumsi kapital konstan).
+    """)
 
 st.markdown("---")
 
-# Konstanta Data (Tahun 2025)
+# ==========================================
+# 4. TABEL DATA & GRAFIK (PLOT)
+# ==========================================
+st.header("📊 Data Historis & Visualisasi Regresi")
+st.write("Tabel di bawah adalah data historis Indonesia selama 40 tahun terakhir yang menjadi dasar perhitungan ekonometrika di atas.")
+
+# Menampilkan dataframe dengan formatting
+st.dataframe(
+    df.style.format({
+        'Penduduk Bekerja (L)': '{:,.0f}',
+        'PDB Growth (%)': '{:.2f}',
+        'Nilai PDB (Y) (basis 1986=100)': '{:.2f}',
+        'Pembentukan Modal Tetap Bruto (K)': '{:,.0f}'
+    }), 
+    height=250, 
+    use_container_width=True
+)
+
+st.write("### Plot Regresi: PDB vs Penduduk Bekerja")
+st.write("Grafik Sebar (*Scatter Plot*) ini menunjukkan korelasi sangat kuat ($R^2 = 0.987$) antara logaritma PDB dan logaritma Tenaga Kerja historis.")
+
+# Membuat grafik interaktif dengan Plotly
+fig = px.scatter(df, x='ln Y', y='ln L', hover_data=['Tahun'], 
+                 trendline="ols", trendline_color_override="red",
+                 labels={'ln Y': 'Log Indeks PDB (ln Y)', 'ln L': 'Log Penduduk Bekerja (ln L)'})
+fig.update_layout(margin=dict(l=20, r=20, t=30, b=20))
+st.plotly_chart(fig, use_container_width=True)
+
+
+st.markdown("---")
+
+# ==========================================
+# 5. KALKULATOR INTERAKTIF DENGAN GRAFIK
+# ==========================================
 BASE_PEKERJA_2025 = 146540000
 ELASTISITAS_L_TO_Y = 1.7311
 ELASTISITAS_Y_TO_L = 0.4065
 
 st.header("🧮 Kalkulator Simulasi Kebijakan")
 
-# Kalkulator 1: Target Penciptaan Lapangan Kerja (CAGR)
 st.subheader("1. Kalkulator Target Lapangan Kerja (Metode CAGR)")
-st.write("Berapa target rata-rata pertumbuhan PDB tahunan yang dibutuhkan untuk mencapai target lapangan kerja dalam periode tertentu?")
+st.write("Jika seorang kandidat berjanji membuka X juta lapangan kerja baru, berapa persen PDB harus tumbuh setiap tahunnya?")
 
-col1, col2 = st.columns(2)
-with col1:
-    target_pekerja = st.number_input("Target Lapangan Kerja Baru (Jiwa):", min_value=100000, value=19000000, step=1000000)
-with col2:
+col_calc1, col_calc2 = st.columns(2)
+with col_calc1:
+    # Memasukkan input angka tapi format UI tetap rapi, step 1 juta
+    target_pekerja = st.number_input("Target Lapangan Kerja Baru (Jiwa):", min_value=100000, value=19000000, step=1000000, format="%d")
+    st.caption(f"*(Target yang Anda masukkan: **{format_indo(target_pekerja)}** jiwa)*")
+with col_calc2:
     tahun_target = st.number_input("Waktu Pencapaian (Tahun):", min_value=1, value=5, step=1)
 
-if st.button("Hitung Kebutuhan PDB"):
-    # Hitung persentase target dari populasi dasar
+if st.button("Hitung Kebutuhan PDB & Buat Grafik Proyeksi"):
     persen_target_pekerja = (target_pekerja / BASE_PEKERJA_2025)
-    
-    # Hitung total PDB yang dibutuhkan
     total_pdb_dibutuhkan = persen_target_pekerja / ELASTISITAS_Y_TO_L
-    
-    # Hitung CAGR
-    # Rumus CAGR: (Nilai Akhir / Nilai Awal)^(1/n) - 1
-    # Nilai akhir rasio = 1 + total_pdb_dibutuhkan
     cagr_pdb = ((1 + total_pdb_dibutuhkan) ** (1 / tahun_target)) - 1
     
-    st.success(f"Untuk menciptakan **{target_pekerja:,.0f}** lapangan kerja dalam **{tahun_target} tahun**, ekonomi Indonesia harus tumbuh konsisten sebesar **{cagr_pdb * 100:.2f}% per tahun**.")
+    st.success(f"📌 Untuk menciptakan **{format_indo(target_pekerja)}** lapangan kerja dalam **{tahun_target} tahun**, ekonomi Indonesia harus tumbuh konsisten sebesar **{cagr_pdb * 100:.2f}% per tahun**.")
+    
+    # Menyiapkan data untuk grafik proyeksi CAGR
+    tahun_list = [f"Tahun {i}" for i in range(tahun_target + 1)]
+    proyeksi_pdb = [100 * ((1 + cagr_pdb) ** i) for i in range(tahun_target + 1)]
+    
+    fig_cagr = go.Figure()
+    fig_cagr.add_trace(go.Scatter(x=tahun_list, y=proyeksi_pdb, mode='lines+markers', name='Proyeksi PDB', line=dict(color='green', width=3)))
+    fig_cagr.update_layout(title=f"Proyeksi Eksponensial PDB ({cagr_pdb * 100:.2f}% per tahun)", yaxis_title="Indeks PDB (Tahun 0 = 100)")
+    st.plotly_chart(fig_cagr, use_container_width=True)
 
 st.markdown("---")
 
-# Kalkulator 2: Dampak Tenaga Kerja ke Ekonomi
 st.subheader("2. Kalkulator Kontribusi Pekerja ke PDB")
-st.write("Jika lapangan kerja bertambah sekian jiwa, seberapa besar dorongannya terhadap PDB nasional?")
+st.write("Jika terserap sekian juta lapangan kerja, seberapa besar efek dominonya menaikkan PDB nasional?")
 
-tambahan_pekerja = st.number_input("Jumlah Pekerja Baru (Jiwa):", min_value=100000, value=407000, step=100000)
+tambahan_pekerja = st.number_input("Jumlah Pekerja Baru (Jiwa):", min_value=10000, value=407000, step=100000, format="%d")
+st.caption(f"*(Pekerja yang ditambahkan: **{format_indo(tambahan_pekerja)}** jiwa)*")
 
-if st.button("Hitung Kontribusi PDB"):
-    # Hitung persentase kenaikan pekerja
+if st.button("Hitung Kontribusi & Lihat Bar Chart"):
     persen_kenaikan = tambahan_pekerja / BASE_PEKERJA_2025
-    
-    # Hitung dampak ke PDB menggunakan beta Cobb-Douglas
     dampak_pdb = persen_kenaikan * ELASTISITAS_L_TO_Y
     
-    st.info(f"Masuknya **{tambahan_pekerja:,.0f}** pekerja baru (pertumbuhan tenaga kerja **{persen_kenaikan * 100:.3f}%**) akan mendorong pertumbuhan PDB sebesar **{dampak_pdb * 100:.3f}%** (ceteris paribus).")
+    st.info(f"📌 Masuknya **{format_indo(tambahan_pekerja)}** pekerja baru (pertumbuhan tenaga kerja **{persen_kenaikan * 100:.3f}%**) akan mendorong pertumbuhan PDB sebesar **{dampak_pdb * 100:.3f}%** (ceteris paribus).")
+    
+    # Grafik Komparasi sederhana
+    fig_bar = go.Figure(data=[
+        go.Bar(name='Pertumbuhan Pekerja (%)', x=['Indikator'], y=[persen_kenaikan * 100], marker_color='blue'),
+        go.Bar(name='Sumbangan ke PDB (%)', x=['Indikator'], y=[dampak_pdb * 100], marker_color='orange')
+    ])
+    fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terhadap Output", yaxis_title="Persentase (%)")
+    st.plotly_chart(fig_bar, use_container_width=True)
 
 st.markdown("---")
-st.caption("Data Base Tahun 2025: 146.540.000 Pekerja | Dihitung dengan Python Statsmodels")
+st.caption("Dikembangkan untuk edukasi Makroekonomi | Dihitung dengan Python Statsmodels & Pandas")
