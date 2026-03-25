@@ -1,23 +1,21 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import io
 
 # ==========================================
-# 1. KONFIGURASI HALAMAN & FUNGSI BANTUAN
+# 1. KONFIGURASI HALAMAN
 # ==========================================
 st.set_page_config(page_title="Kalkulator Makroekonomi", layout="wide")
 
-# Fungsi untuk format angka ribuan ala Indonesia (titik)
+# Fungsi untuk format angka ribuan (untuk output)
 def format_indo(angka):
     return f"{angka:,.0f}".replace(",", ".")
 
 # ==========================================
 # 2. DATASET HISTORIS (1986-2025)
 # ==========================================
-# Menyematkan data langsung agar tabel muncul di website
 data_mentah = """Tahun	PDB Growth (%)	Penduduk Bekerja (L)	Nilai PDB (Y) (basis 1986=100)	Pembentukan Modal Tetap Bruto (K)	ln Y	ln L	ln K
 1986	5,88	65655030	105,88	26,2	4,6623	17,9999	3,2657
 1987	4,93	67878350	111,10	31,42	4,7104	18,0332	3,4474
@@ -61,7 +59,7 @@ data_mentah = """Tahun	PDB Growth (%)	Penduduk Bekerja (L)	Nilai PDB (Y) (basis 
 2025	5,11	146540000	676,08	6852	6,5163	18,8028	8,8323"""
 
 df = pd.read_csv(io.StringIO(data_mentah), sep='\t', decimal=',')
-df['Tahun'] = df['Tahun'].astype(str) # Agar tahun tidak pakai koma ribuan
+df['Tahun'] = df['Tahun'].astype(str)
 
 # ==========================================
 # 3. HEADER & PENJELASAN METODE
@@ -77,8 +75,7 @@ col_teori1, col_teori2 = st.columns(2)
 
 with col_teori1:
     st.subheader("1. Sisi Permintaan (Elastisitas Kesempatan Kerja)")
-    st.write("Mengukur berapa banyak lapangan kerja yang tercipta akibat pertumbuhan ekonomi menggunakan regresi linier OLS model *double-log*:")
-    # Sintaks LaTeX diperbaiki menggunakan st.latex
+    st.write("Mengukur berapa banyak lapangan kerja yang tercipta akibat pertumbuhan ekonomi. Menggunakan regresi linier OLS model *double-log*:")
     st.latex(r"\ln L = b_0 + b_1 \ln Y")
     st.markdown("""
     * **L** = Jumlah Penduduk Bekerja
@@ -90,8 +87,7 @@ with col_teori1:
 
 with col_teori2:
     st.subheader("2. Sisi Penawaran (Fungsi Produksi Cobb-Douglas)")
-    st.write("Mengukur kontribusi tenaga kerja terhadap penciptaan PDB menggunakan Fungsi Produksi log-linier berganda:")
-    # Sintaks LaTeX diperbaiki menggunakan st.latex
+    st.write("Mengukur kontribusi tenaga kerja terhadap penciptaan PDB. Menggunakan Fungsi Produksi log-linier berganda:")
     st.latex(r"\ln Y = \ln A + \alpha \ln K + \beta \ln L")
     st.markdown("""
     * **K** = Kapital / Modal Tetap Bruto (PMTB)
@@ -103,12 +99,11 @@ with col_teori2:
 st.markdown("---")
 
 # ==========================================
-# 4. TABEL DATA & GRAFIK (PLOT)
+# 4. TABEL DATA & GRAFIK
 # ==========================================
 st.header("📊 Data Historis & Visualisasi Regresi")
 st.write("Tabel di bawah adalah data historis Indonesia selama 40 tahun terakhir yang menjadi dasar perhitungan ekonometrika di atas.")
 
-# Menampilkan dataframe dengan formatting
 st.dataframe(
     df.style.format({
         'Penduduk Bekerja (L)': '{:,.0f}',
@@ -123,13 +118,13 @@ st.dataframe(
 st.write("### Plot Regresi: PDB vs Penduduk Bekerja")
 st.write("Grafik Sebar (*Scatter Plot*) ini menunjukkan korelasi sangat kuat ($R^2 = 0.987$) antara logaritma PDB dan logaritma Tenaga Kerja historis.")
 
-# Membuat grafik interaktif dengan Plotly
 fig = px.scatter(df, x='ln Y', y='ln L', hover_data=['Tahun'], 
                  trendline="ols", trendline_color_override="red",
                  labels={'ln Y': 'Log Indeks PDB (ln Y)', 'ln L': 'Log Penduduk Bekerja (ln L)'})
-fig.update_layout(margin=dict(l=20, r=20, t=30, b=20))
-st.plotly_chart(fig, use_container_width=True)
-
+# Mengunci Grafik agar tidak bisa digeser/zoom
+fig.update_layout(xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), margin=dict(l=20, r=20, t=30, b=20))
+# Menyembunyikan ModeBar (menu bar plotly)
+st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 st.markdown("---")
 
@@ -147,49 +142,62 @@ st.write("Jika seorang kandidat berjanji membuka X juta lapangan kerja baru, ber
 
 col_calc1, col_calc2 = st.columns(2)
 with col_calc1:
-    # Memasukkan input angka tapi format UI tetap rapi, step 1 juta
-    target_pekerja = st.number_input("Target Lapangan Kerja Baru (Jiwa):", min_value=100000, value=19000000, step=1000000, format="%d")
-    st.caption(f"*(Target yang Anda masukkan: **{format_indo(target_pekerja)}** jiwa)*")
+    # Menggunakan text_input agar support titik ala Indonesia
+    target_pekerja_str = st.text_input("Target Lapangan Kerja Baru (Jiwa):", value="19.000.000")
+    # Membersihkan titik untuk perhitungan matematis
+    try:
+        target_pekerja = int(target_pekerja_str.replace('.', ''))
+    except ValueError:
+        target_pekerja = 19000000 # default fallback jika user salah ketik huruf
+        st.error("Mohon masukkan angka yang valid.")
 with col_calc2:
     tahun_target = st.number_input("Waktu Pencapaian (Tahun):", min_value=1, value=5, step=1)
 
-if st.button("Hitung Kebutuhan PDB & Buat Grafik Proyeksi"):
-    persen_target_pekerja = (target_pekerja / BASE_PEKERJA_2025)
-    total_pdb_dibutuhkan = persen_target_pekerja / ELASTISITAS_Y_TO_L
-    cagr_pdb = ((1 + total_pdb_dibutuhkan) ** (1 / tahun_target)) - 1
-    
-    st.success(f"📌 Untuk menciptakan **{format_indo(target_pekerja)}** lapangan kerja dalam **{tahun_target} tahun**, ekonomi Indonesia harus tumbuh konsisten sebesar **{cagr_pdb * 100:.2f}% per tahun**.")
-    
-    # Menyiapkan data untuk grafik proyeksi CAGR
-    tahun_list = [f"Tahun {i}" for i in range(tahun_target + 1)]
-    proyeksi_pdb = [100 * ((1 + cagr_pdb) ** i) for i in range(tahun_target + 1)]
-    
-    fig_cagr = go.Figure()
-    fig_cagr.add_trace(go.Scatter(x=tahun_list, y=proyeksi_pdb, mode='lines+markers', name='Proyeksi PDB', line=dict(color='green', width=3)))
-    fig_cagr.update_layout(title=f"Proyeksi Eksponensial PDB ({cagr_pdb * 100:.2f}% per tahun)", yaxis_title="Indeks PDB (Tahun 0 = 100)")
-    st.plotly_chart(fig_cagr, use_container_width=True)
+# Tombol kosmetik (Streamlit akan otomatis menjalankan kode di bawahnya setiap ada perubahan input)
+st.button("Hitung Kebutuhan PDB & Buat Grafik Proyeksi")
+
+# Kalkulasi & Eksekusi Langsung (Muncul Default)
+persen_target_pekerja = (target_pekerja / BASE_PEKERJA_2025)
+total_pdb_dibutuhkan = persen_target_pekerja / ELASTISITAS_Y_TO_L
+cagr_pdb = ((1 + total_pdb_dibutuhkan) ** (1 / tahun_target)) - 1
+
+st.success(f"📌 Untuk menciptakan **{format_indo(target_pekerja)}** lapangan kerja dalam **{tahun_target} tahun**, ekonomi Indonesia harus tumbuh konsisten sebesar **{cagr_pdb * 100:.2f}% per tahun**.")
+
+tahun_list = [f"Tahun {i}" for i in range(tahun_target + 1)]
+proyeksi_pdb = [100 * ((1 + cagr_pdb) ** i) for i in range(tahun_target + 1)]
+
+fig_cagr = go.Figure()
+fig_cagr.add_trace(go.Scatter(x=tahun_list, y=proyeksi_pdb, mode='lines+markers', name='Proyeksi PDB', line=dict(color='green', width=3)))
+fig_cagr.update_layout(title=f"Proyeksi Eksponensial PDB ({cagr_pdb * 100:.2f}% per tahun)", yaxis_title="Indeks PDB (Tahun 0 = 100)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
+st.plotly_chart(fig_cagr, use_container_width=True, config={'displayModeBar': False})
 
 st.markdown("---")
 
 st.subheader("2. Kalkulator Kontribusi Pekerja ke PDB")
 st.write("Jika terserap sekian juta lapangan kerja, seberapa besar efek dominonya menaikkan PDB nasional?")
 
-tambahan_pekerja = st.number_input("Jumlah Pekerja Baru (Jiwa):", min_value=10000, value=407000, step=100000, format="%d")
-st.caption(f"*(Pekerja yang ditambahkan: **{format_indo(tambahan_pekerja)}** jiwa)*")
+# Input pakai text agar bisa pakai titik
+tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa):", value="407.000")
+try:
+    tambahan_pekerja = int(tambahan_pekerja_str.replace('.', ''))
+except ValueError:
+    tambahan_pekerja = 407000
 
-if st.button("Hitung Kontribusi & Lihat Bar Chart"):
-    persen_kenaikan = tambahan_pekerja / BASE_PEKERJA_2025
-    dampak_pdb = persen_kenaikan * ELASTISITAS_L_TO_Y
-    
-    st.info(f"📌 Masuknya **{format_indo(tambahan_pekerja)}** pekerja baru (pertumbuhan tenaga kerja **{persen_kenaikan * 100:.3f}%**) akan mendorong pertumbuhan PDB sebesar **{dampak_pdb * 100:.3f}%** (ceteris paribus).")
-    
-    # Grafik Komparasi sederhana
-    fig_bar = go.Figure(data=[
-        go.Bar(name='Pertumbuhan Pekerja (%)', x=['Indikator'], y=[persen_kenaikan * 100], marker_color='blue'),
-        go.Bar(name='Sumbangan ke PDB (%)', x=['Indikator'], y=[dampak_pdb * 100], marker_color='orange')
-    ])
-    fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terhadap Output", yaxis_title="Persentase (%)")
-    st.plotly_chart(fig_bar, use_container_width=True)
+# Tombol kosmetik
+st.button("Hitung Kontribusi & Lihat Bar Chart")
+
+# Kalkulasi & Eksekusi Langsung (Muncul Default)
+persen_kenaikan = tambahan_pekerja / BASE_PEKERJA_2025
+dampak_pdb = persen_kenaikan * ELASTISITAS_L_TO_Y
+
+st.info(f"📌 Masuknya **{format_indo(tambahan_pekerja)}** pekerja baru (pertumbuhan tenaga kerja **{persen_kenaikan * 100:.3f}%**) akan mendorong pertumbuhan PDB sebesar **{dampak_pdb * 100:.3f}%** (ceteris paribus).")
+
+fig_bar = go.Figure(data=[
+    go.Bar(name='Pertumbuhan Pekerja (%)', x=['Indikator'], y=[persen_kenaikan * 100], marker_color='blue'),
+    go.Bar(name='Sumbangan ke PDB (%)', x=['Indikator'], y=[dampak_pdb * 100], marker_color='orange')
+])
+fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terhadap Output", yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
+st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
 
 st.markdown("---")
 st.caption("Dikembangkan untuk edukasi Makroekonomi | Dihitung dengan Python Statsmodels & Pandas")
