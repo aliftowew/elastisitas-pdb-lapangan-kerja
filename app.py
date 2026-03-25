@@ -199,5 +199,17 @@ fig_bar = go.Figure(data=[
 fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terhadap Output", yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
 st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
 
-st.markdown("---")
-st.caption("Dikembangkan untuk edukasi Makroekonomi | Dihitung dengan Python Statsmodels & Pandas")
+# --- FOOTER ---
+st.markdown(
+    """
+    <div class="footer-container">
+        <div class="tagline-box">
+            <p class="footer-text">
+                <span class="tagline-title">💡 Semua Bisa Dihitung</span><br>
+                by Alif Towew
+            </p>
+        </div>
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
