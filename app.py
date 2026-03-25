@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import io
+import base64
+
 
 # ==========================================
 # 1. KONFIGURASI HALAMAN
@@ -199,10 +201,77 @@ fig_bar = go.Figure(data=[
 fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terhadap Output", yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
 st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
 
-# --- FOOTER ---
+# ==========================================
+# 7. INJEKSI CSS UNTUK FOOTER DENGAN BACKGROUND LOKAL
+# ==========================================
+
+# Fungsi untuk membaca file lokal image5.png
+def get_base64_image(file_name):
+    try:
+        with open(file_name, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except Exception:
+        return "" # Mengembalikan string kosong jika file belum diupload/tidak ditemukan
+
+# Panggil fungsinya untuk image5.png
+bg_image_base64 = get_base64_image("image5.png")
+
 st.markdown(
-    """
-    <div class="footer-container">
+    f"""
+    <style>
+    /* Menghilangkan padding bawah bawaan Streamlit agar footer bisa full-width */
+    .block-container {{
+        padding-bottom: 0rem !important;
+    }}
+    
+    /* Kontainer Footer dengan Background Matematika */
+    .math-footer-bg {{
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        margin-top: 50px;
+        /* Memasukkan gambar base64 langsung ke CSS */
+        background-image: url("data:image/png;base64,{bg_image_base64}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: repeat; /* Jika gambarnya pattern, biarkan repeat */
+        padding: 80px 20px; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }}
+    
+    /* Kotak Putih Melayang di Tengah */
+    .tagline-box {{
+        background-color: #ffffff;
+        padding: 15px 50px;
+        border-radius: 30px; 
+        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.15); 
+        text-align: center;
+        z-index: 10;
+    }}
+    
+    /* Format Teks di dalam Kotak */
+    .footer-text {{
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #555555;
+        margin: 0;
+        line-height: 1.4;
+        font-size: 14px;
+    }}
+    
+    .tagline-title {{
+        font-size: 18px;
+        font-weight: 800;
+        color: #000000;
+    }}
+    </style>
+    
+    <div class="math-footer-bg">
         <div class="tagline-box">
             <p class="footer-text">
                 <span class="tagline-title">💡 Semua Bisa Dihitung</span><br>
