@@ -137,7 +137,7 @@ st.markdown("---")
 # ==========================================
 BASE_PEKERJA_2025 = 146540000
 ELASTISITAS_L_TO_Y = 1.7311     # Metode 2: Beta Supply Side Cobb-Douglas
-ELASTISITAS_Y_TO_L = 0.3966437  # UPDATE! Metode 3: Beta Demand Side Cobb-Douglas
+ELASTISITAS_Y_TO_L = 0.3966437  # Metode 3: Beta Demand Side Cobb-Douglas
 
 st.header("🧮 Kalkulator Simulasi Kebijakan")
 
@@ -146,16 +146,17 @@ st.write("Jika seorang kandidat berjanji membuka X juta lapangan kerja baru, ber
 
 col_calc1, col_calc2 = st.columns(2)
 with col_calc1:
-    # Menggunakan text_input agar support titik ala Indonesia
-    target_pekerja_str = st.text_input("Target Lapangan Kerja Baru (Jiwa):", value="19.000.000")
+    # Menggunakan text_input agar support titik ala Indonesia, default diubah ke 5 juta
+    target_pekerja_str = st.text_input("Target Lapangan Kerja Baru (Jiwa):", value="5.000.000")
     # Membersihkan titik untuk perhitungan matematis
     try:
         target_pekerja = int(target_pekerja_str.replace('.', ''))
     except ValueError:
-        target_pekerja = 19000000 # default fallback jika user salah ketik huruf
+        target_pekerja = 5000000 # default fallback jika user salah ketik huruf
         st.error("Mohon masukkan angka yang valid.")
 with col_calc2:
-    tahun_target = st.number_input("Waktu Pencapaian (Tahun):", min_value=1, value=5, step=1)
+    # Mengubah default waktu pencapaian menjadi 1 tahun
+    tahun_target = st.number_input("Waktu Pencapaian (Tahun):", min_value=1, value=1, step=1)
 
 # Tombol kosmetik
 st.button("Hitung Kebutuhan PDB & Buat Grafik Proyeksi")
@@ -180,12 +181,12 @@ st.markdown("---")
 st.subheader("2. Kalkulator Kontribusi Pekerja ke PDB")
 st.write("Jika terserap sekian juta lapangan kerja, seberapa besar **efek murni** dorongannya menaikkan PDB nasional?")
 
-# Input pakai text agar bisa pakai titik
-tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa):", value="407.000")
+# Input pakai text agar bisa pakai titik, default diubah ke 5 juta
+tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa):", value="5.000.000")
 try:
     tambahan_pekerja = int(tambahan_pekerja_str.replace('.', ''))
 except ValueError:
-    tambahan_pekerja = 407000
+    tambahan_pekerja = 5000000
 
 # Tombol kosmetik
 st.button("Hitung Kontribusi & Lihat Bar Chart")
