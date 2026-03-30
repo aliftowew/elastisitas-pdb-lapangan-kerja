@@ -72,6 +72,9 @@ st.markdown("---")
 st.header("Metodologi & Rumus Pendekatan")
 st.write("Berbeda dengan analisis persentase sederhana, *dashboard* ini menggunakan ekonometrika **Fungsi Produksi Cobb-Douglas Multivariat** (memperhitungkan peran Kapital/Investasi) untuk mendapatkan parameter struktural efek *murni* yang stabil.")
 
+# Penambahan Box Informasi Definisi Lapangan Kerja
+st.info("💡 **Catatan Definisi:** Yang dimaksud dengan tambahan **'Lapangan Kerja'** dalam analisis ini adalah jumlah **agregat (net/bersih) lapangan kerja baru yang terbentuk dibandingkan dengan tahun sebelumnya**, bukan total rekrutmen kotor (*gross hiring*) perusahaan yang sekadar menggantikan pekerja yang pensiun atau *resign*.")
+
 col_teori1, col_teori2 = st.columns(2)
 
 with col_teori1:
@@ -125,9 +128,7 @@ st.write("Grafik Sebar (*Scatter Plot*) ini menunjukkan korelasi sangat kuat ($R
 fig = px.scatter(df, x='ln Y', y='ln L', hover_data=['Tahun'], 
                  trendline="ols", trendline_color_override="red",
                  labels={'ln Y': 'Log Indeks PDB (ln Y)', 'ln L': 'Log Penduduk Bekerja (ln L)'})
-# Mengunci Grafik agar tidak bisa digeser/zoom
 fig.update_layout(xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), margin=dict(l=20, r=20, t=30, b=20))
-# Menyembunyikan ModeBar (menu bar plotly)
 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 st.markdown("---")
@@ -142,20 +143,17 @@ ELASTISITAS_Y_TO_L = 0.3966437  # Metode 3: Beta Demand Side Cobb-Douglas
 st.header("🧮 Kalkulator Simulasi Kebijakan")
 
 st.subheader("1. Kalkulator Target Lapangan Kerja (Metode CAGR)")
-st.write("Jika seorang kandidat berjanji membuka X juta lapangan kerja baru, berapa persen **efek murni** PDB harus ditumbuhkan setiap tahunnya? *(Tanpa bantuan penambahan mesin/investasi)*")
+st.write("Jika suatu negara menargetkan membuka X juta lapangan kerja baru, berapa persen **efek murni** PDB harus ditumbuhkan setiap tahunnya? *(Tanpa bantuan penambahan mesin/investasi)*")
 
 col_calc1, col_calc2 = st.columns(2)
 with col_calc1:
-    # Menggunakan text_input agar support titik ala Indonesia, default diubah ke 5 juta
     target_pekerja_str = st.text_input("Target Lapangan Kerja Baru (Jiwa):", value="5.000.000")
-    # Membersihkan titik untuk perhitungan matematis
     try:
         target_pekerja = int(target_pekerja_str.replace('.', ''))
     except ValueError:
-        target_pekerja = 5000000 # default fallback jika user salah ketik huruf
+        target_pekerja = 5000000 
         st.error("Mohon masukkan angka yang valid.")
 with col_calc2:
-    # Mengubah default waktu pencapaian menjadi 1 tahun
     tahun_target = st.number_input("Waktu Pencapaian (Tahun):", min_value=1, value=1, step=1)
 
 # Tombol kosmetik
@@ -181,7 +179,6 @@ st.markdown("---")
 st.subheader("2. Kalkulator Kontribusi Pekerja ke PDB")
 st.write("Jika terserap sekian juta lapangan kerja, seberapa besar **efek murni** dorongannya menaikkan PDB nasional?")
 
-# Input pakai text agar bisa pakai titik, default diubah ke 5 juta
 tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa):", value="5.000.000")
 try:
     tambahan_pekerja = int(tambahan_pekerja_str.replace('.', ''))
@@ -205,7 +202,7 @@ fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terha
 st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
 
 # ==========================================
-# 7. INJEKSI CSS UNTUK FOOTER DENGAN BACKGROUND LOKAL (EFEK OPACITY 40%)
+# 7. INJEKSI CSS UNTUK FOOTER DENGAN BACKGROUND LOKAL
 # ==========================================
 
 def get_base64_image(file_name):
