@@ -5,7 +5,6 @@ import plotly.graph_objects as go
 import io
 import base64
 
-
 # ==========================================
 # 1. KONFIGURASI HALAMAN
 # ==========================================
@@ -71,31 +70,34 @@ st.write("Analisis data historis (1986-2025) untuk mengukur hubungan dua arah an
 
 st.markdown("---")
 st.header("Metodologi & Rumus Pendekatan")
-st.write("Analisis ini menggunakan pendekatan ekonometrika untuk mendapatkan parameter struktural yang stabil, meninggalkan batas volatilitas dari metode persentase deskriptif biasa.")
+st.write("Berbeda dengan analisis persentase sederhana, *dashboard* ini menggunakan ekonometrika **Fungsi Produksi Cobb-Douglas Multivariat** (memperhitungkan peran Kapital/Investasi) untuk mendapatkan parameter struktural efek *murni* yang stabil.")
 
 col_teori1, col_teori2 = st.columns(2)
 
 with col_teori1:
-    st.subheader("1. Sisi Permintaan (Elastisitas Kesempatan Kerja)")
-    st.write("Mengukur berapa banyak lapangan kerja yang tercipta akibat pertumbuhan ekonomi. Menggunakan regresi linier OLS model *double-log*:")
-    st.latex(r"\ln L = b_0 + b_1 \ln Y")
+    st.subheader("1. Sisi Permintaan (Kebutuhan Pekerja)")
+    st.write("Mengukur *efek murni* berapa banyak lapangan kerja yang dibutuhkan untuk menumbuhkan PDB secara spesifik, dengan mengasumsikan faktor mesin/investasi konstan:")
+    st.latex(r"\ln L = c_0 + \beta_{inv} \ln Y + \alpha_{inv} \ln K")
     st.markdown("""
     * **L** = Jumlah Penduduk Bekerja
     * **Y** = Indeks PDB
-    * **b₁** = Koefisien Elastisitas (**0,4065**)
+    * **K** = Kapital / Investasi Mesin
+    * **β_inv** = Elastisitas PDB terhadap Pekerja (**0,3966**)
     
-    **Kesimpulan:** Setiap pertumbuhan 1% PDB membuka **0,407%** lapangan kerja baru.
+    **Kesimpulan:** Secara teori, setiap menargetkan pertumbuhan 1% PDB membutuhkan **0,397%** lapangan kerja baru (asumsi *ceteris paribus*).
     """)
 
 with col_teori2:
-    st.subheader("2. Sisi Penawaran (Fungsi Produksi Cobb-Douglas)")
-    st.write("Mengukur kontribusi tenaga kerja terhadap penciptaan PDB. Menggunakan Fungsi Produksi log-linier berganda:")
+    st.subheader("2. Sisi Penawaran (Sumbangan ke PDB)")
+    st.write("Mengukur *efek murni* kontribusi tenaga kerja terhadap penciptaan PDB. Menggunakan Fungsi Produksi log-linier berganda:")
     st.latex(r"\ln Y = \ln A + \alpha \ln K + \beta \ln L")
     st.markdown("""
-    * **K** = Kapital / Modal Tetap Bruto (PMTB)
+    * **L** = Jumlah Penduduk Bekerja
+    * **Y** = Indeks PDB
+    * **K** = Kapital / Investasi Mesin
     * **β** = Elastisitas Output Tenaga Kerja (**1,7311**)
     
-    **Kesimpulan:** Setiap penambahan 1% jumlah pekerja berkontribusi menaikkan PDB sebesar **1,7311%** (asumsi kapital konstan).
+    **Kesimpulan:** Setiap penambahan 1% jumlah pekerja berkontribusi menaikkan PDB sebesar **1,7311%** (asumsi *ceteris paribus*).
     """)
 
 st.markdown("---")
@@ -117,7 +119,7 @@ st.dataframe(
     use_container_width=True
 )
 
-st.write("### Plot Regresi: PDB vs Penduduk Bekerja")
+st.write("### Plot Korelasi Data")
 st.write("Grafik Sebar (*Scatter Plot*) ini menunjukkan korelasi sangat kuat ($R^2 = 0.987$) antara logaritma PDB dan logaritma Tenaga Kerja historis.")
 
 fig = px.scatter(df, x='ln Y', y='ln L', hover_data=['Tahun'], 
@@ -134,13 +136,13 @@ st.markdown("---")
 # 5. KALKULATOR INTERAKTIF DENGAN GRAFIK
 # ==========================================
 BASE_PEKERJA_2025 = 146540000
-ELASTISITAS_L_TO_Y = 1.7311
-ELASTISITAS_Y_TO_L = 0.4065
+ELASTISITAS_L_TO_Y = 1.7311     # Metode 2: Beta Supply Side Cobb-Douglas
+ELASTISITAS_Y_TO_L = 0.3966437  # UPDATE! Metode 3: Beta Demand Side Cobb-Douglas
 
 st.header("🧮 Kalkulator Simulasi Kebijakan")
 
 st.subheader("1. Kalkulator Target Lapangan Kerja (Metode CAGR)")
-st.write("Jika seorang kandidat berjanji membuka X juta lapangan kerja baru, berapa persen PDB harus tumbuh setiap tahunnya?")
+st.write("Jika seorang kandidat berjanji membuka X juta lapangan kerja baru, berapa persen **efek murni** PDB harus ditumbuhkan setiap tahunnya? *(Tanpa bantuan penambahan mesin/investasi)*")
 
 col_calc1, col_calc2 = st.columns(2)
 with col_calc1:
@@ -155,15 +157,15 @@ with col_calc1:
 with col_calc2:
     tahun_target = st.number_input("Waktu Pencapaian (Tahun):", min_value=1, value=5, step=1)
 
-# Tombol kosmetik (Streamlit akan otomatis menjalankan kode di bawahnya setiap ada perubahan input)
+# Tombol kosmetik
 st.button("Hitung Kebutuhan PDB & Buat Grafik Proyeksi")
 
-# Kalkulasi & Eksekusi Langsung (Muncul Default)
+# Kalkulasi
 persen_target_pekerja = (target_pekerja / BASE_PEKERJA_2025)
 total_pdb_dibutuhkan = persen_target_pekerja / ELASTISITAS_Y_TO_L
 cagr_pdb = ((1 + total_pdb_dibutuhkan) ** (1 / tahun_target)) - 1
 
-st.success(f"📌 Untuk menciptakan **{format_indo(target_pekerja)}** lapangan kerja dalam **{tahun_target} tahun**, ekonomi Indonesia harus tumbuh konsisten sebesar **{cagr_pdb * 100:.2f}% per tahun**.")
+st.success(f"📌 Untuk menciptakan **{format_indo(target_pekerja)}** lapangan kerja murni dari pertumbuhan (tanpa disubstitusi investasi baru) dalam **{tahun_target} tahun**, PDB Indonesia harus tumbuh konsisten sebesar **{cagr_pdb * 100:.2f}% per tahun**.")
 
 tahun_list = [f"Tahun {i}" for i in range(tahun_target + 1)]
 proyeksi_pdb = [100 * ((1 + cagr_pdb) ** i) for i in range(tahun_target + 1)]
@@ -176,7 +178,7 @@ st.plotly_chart(fig_cagr, use_container_width=True, config={'displayModeBar': Fa
 st.markdown("---")
 
 st.subheader("2. Kalkulator Kontribusi Pekerja ke PDB")
-st.write("Jika terserap sekian juta lapangan kerja, seberapa besar efek dominonya menaikkan PDB nasional?")
+st.write("Jika terserap sekian juta lapangan kerja, seberapa besar **efek murni** dorongannya menaikkan PDB nasional?")
 
 # Input pakai text agar bisa pakai titik
 tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa):", value="407.000")
@@ -188,15 +190,15 @@ except ValueError:
 # Tombol kosmetik
 st.button("Hitung Kontribusi & Lihat Bar Chart")
 
-# Kalkulasi & Eksekusi Langsung (Muncul Default)
+# Kalkulasi
 persen_kenaikan = tambahan_pekerja / BASE_PEKERJA_2025
 dampak_pdb = persen_kenaikan * ELASTISITAS_L_TO_Y
 
-st.info(f"📌 Masuknya **{format_indo(tambahan_pekerja)}** pekerja baru (pertumbuhan tenaga kerja **{persen_kenaikan * 100:.3f}%**) akan mendorong pertumbuhan PDB sebesar **{dampak_pdb * 100:.3f}%** (ceteris paribus).")
+st.info(f"📌 Masuknya **{format_indo(tambahan_pekerja)}** pekerja baru (pertumbuhan tenaga kerja **{persen_kenaikan * 100:.3f}%**) akan memberikan efek murni pada pertumbuhan PDB sebesar **{dampak_pdb * 100:.3f}%** (ceteris paribus).")
 
 fig_bar = go.Figure(data=[
     go.Bar(name='Pertumbuhan Pekerja (%)', x=['Indikator'], y=[persen_kenaikan * 100], marker_color='blue'),
-    go.Bar(name='Sumbangan ke PDB (%)', x=['Indikator'], y=[dampak_pdb * 100], marker_color='orange')
+    go.Bar(name='Sumbangan murni ke PDB (%)', x=['Indikator'], y=[dampak_pdb * 100], marker_color='orange')
 ])
 fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terhadap Output", yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
 st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
@@ -205,28 +207,23 @@ st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': Fal
 # 7. INJEKSI CSS UNTUK FOOTER DENGAN BACKGROUND LOKAL (EFEK OPACITY 40%)
 # ==========================================
 
-# Fungsi untuk membaca file lokal
 def get_base64_image(file_name):
     try:
         with open(file_name, "rb") as f:
             data = f.read()
         return base64.b64encode(data).decode()
     except Exception:
-        return "" # Mengembalikan string kosong jika file tidak ditemukan
+        return ""
 
-# PASTIKAN NAMA FILE DI BAWAH INI SAMA PERSIS DENGAN YANG DI GITHUB
-# Jika Anda tetap pakai nama aslinya, ganti "image5.png" menjadi "1000547698.png"
 bg_image_base64 = get_base64_image("image5.png")
 
 st.markdown(
     f"""
     <style>
-    /* Menghilangkan padding bawah bawaan Streamlit */
     .block-container {{
         padding-bottom: 0rem !important;
     }}
     
-    /* Kontainer Footer Utama dengan Trik Overlay Gradient */
     .math-footer-bg {{
         width: 100vw;
         position: relative;
@@ -235,7 +232,6 @@ st.markdown(
         margin-left: -50vw;
         margin-right: -50vw;
         margin-top: 50px;
-        /* Trik Anti-Gagal: Menumpuk warna putih transparan (0.6) di atas gambar */
         background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url("data:image/png;base64,{bg_image_base64}");
         background-size: cover;
         background-position: center;
@@ -246,7 +242,6 @@ st.markdown(
         align-items: center;
     }}
     
-    /* Kotak Putih Melayang di Tengah */
     .tagline-box {{
         background-color: #ffffff;
         padding: 15px 50px;
@@ -256,7 +251,6 @@ st.markdown(
         z-index: 10;
     }}
     
-    /* Format Teks di dalam Kotak */
     .footer-text {{
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         color: #555555;
