@@ -73,7 +73,7 @@ st.header("Metodologi & Rumus Pendekatan")
 st.write("Berbeda dengan analisis persentase sederhana, *dashboard* ini menggunakan ekonometrika **Fungsi Produksi Cobb-Douglas Multivariat** (memperhitungkan peran Kapital/Investasi) untuk mendapatkan parameter struktural efek *murni* yang stabil.")
 
 # Penambahan Box Informasi Definisi Lapangan Kerja
-st.info("💡 **Catatan Definisi:** Yang dimaksud dengan tambahan **'Lapangan Kerja'** dalam analisis ini adalah jumlah **agregat (net/bersih) lapangan kerja baru yang terbentuk dibandingkan dengan tahun sebelumnya**, bukan total rekrutmen kotor (*gross hiring*) yang menggantikan pekerja yang pensiun atau *resign*.")
+st.info("💡 **Catatan Definisi:** Yang dimaksud dengan tambahan **'Lapangan Kerja'** dalam analisis ini adalah jumlah **agregat (net/bersih) lapangan kerja baru yang terbentuk dibandingkan dengan tahun sebelumnya**, bukan total rekrutmen kotor (*gross hiring*) perusahaan yang sekadar menggantikan pekerja yang pensiun atau pindah kerja.")
 
 col_teori1, col_teori2 = st.columns(2)
 
@@ -147,7 +147,8 @@ st.write("Jika suatu negara menargetkan membuka X juta lapangan kerja baru, bera
 
 col_calc1, col_calc2 = st.columns(2)
 with col_calc1:
-    target_pekerja_str = st.text_input("Target Lapangan Kerja Baru (Jiwa):", value="5.000.000")
+    # LABEL DIUBAH AGAR LEBIH JELAS
+    target_pekerja_str = st.text_input("Target Lapangan Kerja Baru (Jiwa) - [Agregat netto vs tahun sebelumnya]:", value="5.000.000")
     try:
         target_pekerja = int(target_pekerja_str.replace('.', ''))
     except ValueError:
@@ -179,7 +180,8 @@ st.markdown("---")
 st.subheader("2. Kalkulator Kontribusi Pekerja ke PDB")
 st.write("Jika terserap sekian juta lapangan kerja, seberapa besar **efek murni** dorongannya menaikkan PDB nasional?")
 
-tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa):", value="5.000.000")
+# LABEL DIUBAH AGAR LEBIH JELAS
+tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa) - [Agregat netto vs tahun sebelumnya]:", value="5.000.000")
 try:
     tambahan_pekerja = int(tambahan_pekerja_str.replace('.', ''))
 except ValueError:
