@@ -73,7 +73,7 @@ st.header("Metodologi & Rumus Pendekatan")
 st.write("Berbeda dengan analisis persentase sederhana, *dashboard* ini menggunakan ekonometrika **Fungsi Produksi Cobb-Douglas Multivariat** (memperhitungkan peran Kapital/Investasi) untuk mendapatkan parameter struktural efek *murni* yang stabil.")
 
 # Penambahan Box Informasi Definisi Lapangan Kerja
-st.info("💡 **Catatan Definisi:** Yang dimaksud dengan tambahan **'Lapangan Kerja'** dalam analisis ini adalah jumlah **agregat (net/bersih) lapangan kerja baru yang terbentuk dibandingkan dengan tahun sebelumnya**, bukan total rekrutmen kotor (*gross hiring*) perusahaan yang sekadar menggantikan pekerja yang pensiun atau *resign*.")
+st.info("💡 **Catatan Definisi:** Yang dimaksud dengan tambahan **'Lapangan Kerja'** dalam analisis ini adalah jumlah **agregat (net/bersih) lapangan kerja baru yang terbentuk dibandingkan dengan tahun sebelumnya**, bukan total rekrutmen kotor (*gross hiring*) yang menggantikan pekerja yang pensiun atau *resign*.")
 
 col_teori1, col_teori2 = st.columns(2)
 
