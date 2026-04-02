@@ -211,14 +211,20 @@ st.write("Simulasi ini menggunakan kerangka **Growth Accounting** untuk memproye
 # Memasukkan Rumus dengan LaTeX
 st.latex(r"\% \Delta Y = \% \Delta A + (\alpha \times \% \Delta K) + (\beta \times \% \Delta L)")
 
-# Menggunakan Expander agar tampilan tetap rapi
-with st.expander("💡 Klik untuk Penjelasan Rumus & Variabel A (Teknologi/Efisiensi)"):
+# Menggunakan Expander agar tampilan tetap rapi, sekarang dengan panduan menentukan nilai A
+with st.expander("💡 Klik untuk Penjelasan Rumus & Cara Menentukan Nilai Teknologi (A)"):
     st.markdown("""
     Persamaan di atas adalah bentuk dinamis (pertumbuhan) dari model Cobb-Douglas. Berikut penjelasannya:
     * **% ΔY (Pertumbuhan PDB):** Kecepatan laju ekonomi nasional secara keseluruhan.
     * **% ΔK (Pertumbuhan Modal):** Injeksi investasi, mesin, dan infrastruktur baru.
     * **% ΔL (Pertumbuhan Pekerja):** Serapan lapangan kerja baru.
-    * **% ΔA (Pertumbuhan TFP / Inovasi):** Ini adalah *Total Factor Productivity (TFP)* yang mengukur pertumbuhan efisiensi tahun ini. Ini ibarat **"Tombol Turbo"** (seperti perbaikan birokrasi, digitalisasi, atau adopsi AI) yang mampu mendongkrak output PDB secara signifikan, meskipun jumlah mesin dan manusianya tidak ditambah.
+    * **% ΔA (Pertumbuhan TFP / Inovasi):** Mengukur *kecepatan* inovasi dan efisiensi tahun ini (Total Factor Productivity). Ini ibarat **"Tombol Turbo"** yang mampu melipatgandakan *output* produksi PDB secara ajaib, meskipun jumlah mesin dan manusianya tidak ditambah.
+    
+    **Lalu, angka berapa yang harus saya masukkan ke Keran Teknologi (A)?**
+    Karena wujudnya tidak berupa fisik barang/orang, di meja perumusan kebijakan, angka ini ditetapkan lewat tiga skenario:
+    1. **Skenario Historis (Normal):** Secara historis (data Bank Dunia/APO), efisiensi ekonomi Indonesia rata-rata hanya bertumbuh **0,5% hingga 1,2% per tahun**. Gunakan kisaran angka ini jika pemerintah berjalan normal (*Business as Usual*).
+    2. **Skenario Target Kebijakan (Optimis):** Jika pemerintah melakukan gebrakan masif (seperti digitalisasi birokrasi, penurunan ICOR akibat jalan tol, adopsi AI, dan pemberantasan korupsi), Anda bisa mengasumsikan efisiensi akan melesat ke angka **2,00% atau lebih**.
+    3. **Skenario "Sisa Target":** Jika Presiden menargetkan PDB wajib 8%, sementara kemampuan rekrutmen pekerja dan investasi sudah mentok, silakan naikkan terus angka keran (A) ini sampai hasil akhir menyentuh 8%. Angka (A) yang ditemukan tersebut menjadi beban tugas mutlak bagi kementerian terkait inovasi, riset, dan efisiensi birokrasi!
     """)
 
 # Catatan: Nilai elastisitas
@@ -239,7 +245,9 @@ with col_sim2:
 
 with col_sim3:
     st.markdown("**3. Keran Teknologi/TFP (A)**")
-    pertumbuhan_a = st.number_input("Injeksi Efisiensi & Inovasi (%):", value=1.50, step=0.1)
+    pertumbuhan_a = st.number_input("Injeksi Efisiensi & Inovasi (%):", value=1.00, step=0.1)
+    # Menambahkan caption panduan di bawah input
+    st.caption("💡 Normal RI: 0,5% - 1,2%. Isi lebih tinggi jika ada skenario gebrakan reformasi birokrasi atau digitalisasi.")
     st.caption(f"Kontribusi ke PDB: {pertumbuhan_a:.2f}%")
 
 # Tombol Eksekusi
