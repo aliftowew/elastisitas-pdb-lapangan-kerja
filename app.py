@@ -218,7 +218,7 @@ with st.expander("💡 Klik untuk Penjelasan Rumus & Variabel A (Teknologi/Efisi
     * **% ΔY (Pertumbuhan PDB):** Kecepatan laju ekonomi nasional secara keseluruhan.
     * **% ΔK (Pertumbuhan Modal):** Injeksi investasi, mesin, dan infrastruktur baru.
     * **% ΔL (Pertumbuhan Pekerja):** Serapan lapangan kerja baru.
-    * **% ΔA (Pertumbuhan TFP / Inovasi):** Ini adalah *Total Factor Productivity (TFP)*. Berbeda dengan posisi statis masa lalu (Konstanta regresi), **% ΔA** mengukur *kecepatan* inovasi tahun ini. Ini ibarat **"Tombol Turbo"** (seperti perbaikan birokrasi, digitalisasi, atau adopsi AI) yang mampu melipatgandakan *output* produksi PDB secara ajaib, meskipun jumlah mesin dan manusianya tidak ditambah.
+    * **% ΔA (Pertumbuhan TFP / Inovasi):** Ini adalah *Total Factor Productivity (TFP)* yang mengukur pertumbuhan efisiensi tahun ini. Ini ibarat **"Tombol Turbo"** (seperti perbaikan birokrasi, digitalisasi, atau adopsi AI) yang mampu mendongkrak output PDB secara signifikan, meskipun jumlah mesin dan manusianya tidak ditambah.
     """)
 
 # Catatan: Nilai elastisitas
