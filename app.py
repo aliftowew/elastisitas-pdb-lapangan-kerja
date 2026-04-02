@@ -65,7 +65,7 @@ df['Tahun'] = df['Tahun'].astype(str)
 # Menghitung Persentase Pertumbuhan Pekerja
 df['Pertumbuhan Pekerja (%)'] = df['Penduduk Bekerja (L)'].pct_change() * 100
 
-# Memasukkan Data TFP (A) Historis
+# Memasukkan Data TFP (A) Historis ke kolom baru
 tfp_data = {
     '1987': -1.774, '1988': -2.231, '1989': -0.184, '1990': 0.516, '1991': 1.961,
     '1992': 1.422, '1993': 1.698, '1994': -0.742, '1995': 1.255, '1996': 0.573,
@@ -124,9 +124,10 @@ st.markdown("---")
 # ==========================================
 # 4. TABEL DATA & GRAFIK
 # ==========================================
-st.header("📊 Data Historis & Visualisasi Regresi")
-st.write("Tabel di bawah adalah data historis Indonesia selama 40 tahun terakhir yang menjadi dasar perhitungan ekonometrika di atas.")
+st.header("📊 Data Historis & Visualisasi Tren")
+st.write("Tabel di bawah mencakup data historis Indonesia, termasuk nilai **TFP Growth (Efisiensi/Inovasi)** hasil perhitungan *Solow Residual*.")
 
+# Menampilkan tabel dengan kolom TFP Growth baru
 st.dataframe(
     df.style.format({
         'Penduduk Bekerja (L)': '{:,.0f}',
@@ -134,9 +135,9 @@ st.dataframe(
         'Nilai PDB (Y) (basis 1986=100)': '{:.2f}',
         'Pembentukan Modal Tetap Bruto (K)': '{:,.0f}',
         'Pertumbuhan Pekerja (%)': '{:.2f}',
-        'TFP Growth (%)': '{:.3f}'
+        'TFP Growth (%)': '{:.3f}' # Menampilkan 3 desimal untuk presisi inovasi
     }), 
-    height=250, 
+    height=300, 
     use_container_width=True
 )
 
@@ -152,25 +153,25 @@ with col_grafik1:
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 with col_grafik2:
-    st.write("#### Tren Historis: PDB, Pekerja, & Efisiensi (TFP)")
+    st.write("#### Tren Historis: PDB, Pekerja, & Inovasi (TFP)")
     st.write("Melihat pergerakan %ΔY, %ΔL, dan %ΔA secara bersamaan (1987-2023).")
     
-    # Filter data hanya untuk tahun yang ada TFP-nya
+    # Filter data hanya untuk tahun yang ada TFP-nya agar grafik tidak terputus
     df_plot = df.dropna(subset=['TFP Growth (%)']).copy()
     
     fig_tren = go.Figure()
     # Line PDB
     fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['PDB Growth (%)'], mode='lines+markers', name='PDB Growth (%)', line=dict(color='green', width=3)))
-    # Line TFP
+    # Line TFP (A)
     fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['TFP Growth (%)'], mode='lines+markers', name='Inovasi/TFP (%)', line=dict(color='red', width=2, dash='dot')))
     # Line Pekerja
-    fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['Pertumbuhan Pekerja (%)'], mode='lines', name='Pertumbuhan L (%)', line=dict(color='blue', width=2)))
+    fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['Pertumbuhan Pekerja (%)'], mode='lines', name='Pertumbuhan Pekerja (%)', line=dict(color='blue', width=2)))
     
     # Anotasi Krisis
     fig_tren.add_annotation(x='1998', y=-17.485, text="Krisis '98", showarrow=True, arrowhead=1, ax=20, ay=-20, font=dict(color="red"))
     fig_tren.add_annotation(x='2020', y=-2.721, text="Pandemi '20", showarrow=True, arrowhead=1, ax=20, ay=-30, font=dict(color="red"))
     
-    fig_tren.update_layout(yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), legend=dict(orientation="h", ybottom=-0.2), margin=dict(l=20, r=20, t=30, b=20))
+    fig_tren.update_layout(yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), legend=dict(orientation="h", y=-0.2), margin=dict(l=20, r=20, t=30, b=20))
     st.plotly_chart(fig_tren, use_container_width=True, config={'displayModeBar': False})
 
 st.markdown("---")
@@ -382,7 +383,7 @@ st.markdown(
         <div class="tagline-box">
             <p class="footer-text">
                 <span class="tagline-title">💡 Semua Bisa Dihitung</span><br>
-                by Alif Towew
+                by Alif Hijriah
             </p>
         </div>
     </div>
