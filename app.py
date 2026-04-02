@@ -78,6 +78,19 @@ tfp_data = {
 }
 df['TFP Growth (%)'] = df['Tahun'].map(tfp_data)
 
+# Mengatur urutan kolom agar TFP Growth berada tepat di sebelah PDB Growth
+kolom_urut = [
+    'Tahun', 
+    'PDB Growth (%)', 
+    'TFP Growth (%)', 
+    'Penduduk Bekerja (L)', 
+    'Pertumbuhan Pekerja (%)', 
+    'Nilai PDB (Y) (basis 1986=100)', 
+    'Pembentukan Modal Tetap Bruto (K)', 
+    'ln Y', 'ln L', 'ln K'
+]
+df = df[kolom_urut]
+
 # ==========================================
 # 3. HEADER & PENJELASAN METODE
 # ==========================================
@@ -127,15 +140,15 @@ st.markdown("---")
 st.header("📊 Data Historis & Visualisasi Tren")
 st.write("Tabel di bawah mencakup data historis Indonesia, termasuk nilai **TFP Growth (Efisiensi/Inovasi)** hasil perhitungan *Solow Residual*.")
 
-# Menampilkan tabel dengan kolom TFP Growth baru
+# Menampilkan tabel dengan urutan kolom yang baru
 st.dataframe(
     df.style.format({
-        'Penduduk Bekerja (L)': '{:,.0f}',
         'PDB Growth (%)': '{:.2f}',
-        'Nilai PDB (Y) (basis 1986=100)': '{:.2f}',
-        'Pembentukan Modal Tetap Bruto (K)': '{:,.0f}',
+        'TFP Growth (%)': '{:.3f}', # Menampilkan 3 desimal untuk presisi inovasi
+        'Penduduk Bekerja (L)': '{:,.0f}',
         'Pertumbuhan Pekerja (%)': '{:.2f}',
-        'TFP Growth (%)': '{:.3f}' # Menampilkan 3 desimal untuk presisi inovasi
+        'Nilai PDB (Y) (basis 1986=100)': '{:.2f}',
+        'Pembentukan Modal Tetap Bruto (K)': '{:,.0f}'
     }), 
     height=300, 
     use_container_width=True
@@ -168,8 +181,8 @@ with col_grafik2:
     fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['Pertumbuhan Pekerja (%)'], mode='lines', name='Pertumbuhan Pekerja (%)', line=dict(color='blue', width=2)))
     
     # Anotasi Krisis
-    fig_tren.add_annotation(x='1998', y=-17.485, text="Krisis '98", showarrow=True, arrowhead=1, ax=20, ay=-20, font=dict(color="red"))
-    fig_tren.add_annotation(x='2020', y=-2.721, text="Pandemi '20", showarrow=True, arrowhead=1, ax=20, ay=-30, font=dict(color="red"))
+    fig_tren.add_annotation(x='1998', y=-17.485, text="Krisis '98", showarrow=True, arrowhead=1, ax=20, ay=-20, font=dict(color="black"))
+    fig_tren.add_annotation(x='2020', y=-2.721, text="Pandemi '20", showarrow=True, arrowhead=1, ax=20, ay=-30, font=dict(color="black"))
     
     fig_tren.update_layout(yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), legend=dict(orientation="h", y=-0.2), margin=dict(l=20, r=20, t=30, b=20))
     st.plotly_chart(fig_tren, use_container_width=True, config={'displayModeBar': False})
