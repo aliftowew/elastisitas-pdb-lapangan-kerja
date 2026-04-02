@@ -206,10 +206,23 @@ st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': Fal
 st.markdown("---")
 
 st.subheader("3. Simulasi Lengkap: Pekerja + Modal + Teknologi (Growth Accounting)")
-st.write("Bagaimana jika pemerintah melakukan manuver ganda? Simulasi ini menghitung total pertumbuhan PDB jika kita menyuntikkan pekerja baru, menarik investasi modal, dan meningkatkan teknologi secara bersamaan.")
+st.write("Simulasi ini menggunakan kerangka **Growth Accounting** untuk memproyeksikan total pertumbuhan PDB jika pemerintah memacu tiga mesin utama secara bersamaan.")
 
-# Catatan: Nilai elastisitas ini bisa disesuaikan dengan regresi empiris Anda
-ALPHA = 0.40  # Asumsi elastisitas modal (contoh teoretis)
+# Memasukkan Rumus dengan LaTeX
+st.latex(r"\% \Delta Y = \% \Delta A + (\alpha \times \% \Delta K) + (\beta \times \% \Delta L)")
+
+# Menggunakan Expander agar tampilan tetap rapi
+with st.expander("💡 Klik untuk Penjelasan Rumus & Variabel A (Teknologi/Efisiensi)"):
+    st.markdown("""
+    Persamaan di atas adalah bentuk dinamis (pertumbuhan) dari model Cobb-Douglas. Berikut penjelasannya:
+    * **% ΔY (Pertumbuhan PDB):** Kecepatan laju ekonomi nasional secara keseluruhan.
+    * **% ΔK (Pertumbuhan Modal):** Injeksi investasi, mesin, dan infrastruktur baru.
+    * **% ΔL (Pertumbuhan Pekerja):** Serapan lapangan kerja baru.
+    * **% ΔA (Pertumbuhan TFP / Inovasi):** Ini adalah *Total Factor Productivity (TFP)*. Berbeda dengan posisi statis masa lalu (Konstanta regresi), **% ΔA** mengukur *kecepatan* inovasi tahun ini. Ini ibarat **"Tombol Turbo"** (seperti perbaikan birokrasi, digitalisasi, atau adopsi AI) yang mampu melipatgandakan *output* produksi PDB secara ajaib, meskipun jumlah mesin dan manusianya tidak ditambah.
+    """)
+
+# Catatan: Nilai elastisitas
+ALPHA = 0.40  # Asumsi elastisitas modal teoritis (untuk simulasi)
 BETA = 1.7311 # Elastisitas pekerja (dari regresi empiris kita)
 
 col_sim1, col_sim2, col_sim3 = st.columns(3)
@@ -235,13 +248,13 @@ st.button("Jalankan Simulasi Total PDB")
 # Kalkulasi Total
 total_growth_pdb = pertumbuhan_a + (ALPHA * pertumbuhan_k) + (BETA * pertumbuhan_l)
 
-st.success(f"🚀 **HASIL SIMULASI:** Dengan kombinasi ketiga kebijakan di atas, PDB Indonesia diproyeksikan akan tumbuh sebesar **{total_growth_pdb:.2f}%**.")
+st.success(f"🚀 **HASIL SIMULASI:** Dengan kombinasi ketiga bauran kebijakan di atas, PDB Indonesia diproyeksikan akan melesat tumbuh sebesar **{total_growth_pdb:.2f}%**.")
 
 # Visualisasi Komposisi (Waterfall / Bar Chart)
 fig_komposisi = go.Figure(go.Waterfall(
     name="20", orientation="v",
     measure=["relative", "relative", "relative", "total"],
-    x=["Dorongan Pekerja", "Dorongan Modal", "Dorongan Teknologi", "TOTAL PDB GROWTH"],
+    x=["Dorongan Pekerja (L)", "Dorongan Modal (K)", "Dorongan Teknologi (A)", "TOTAL PDB GROWTH"],
     textposition="outside",
     text=[f"+{pertumbuhan_l * BETA:.2f}%", f"+{pertumbuhan_k * ALPHA:.2f}%", f"+{pertumbuhan_a:.2f}%", f"{total_growth_pdb:.2f}%"],
     y=[pertumbuhan_l * BETA, pertumbuhan_k * ALPHA, pertumbuhan_a, total_growth_pdb],
