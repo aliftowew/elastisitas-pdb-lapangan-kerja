@@ -62,6 +62,22 @@ data_mentah = """Tahun	PDB Growth (%)	Penduduk Bekerja (L)	Nilai PDB (Y) (basis 
 df = pd.read_csv(io.StringIO(data_mentah), sep='\t', decimal=',')
 df['Tahun'] = df['Tahun'].astype(str)
 
+# Menghitung Persentase Pertumbuhan Pekerja
+df['Pertumbuhan Pekerja (%)'] = df['Penduduk Bekerja (L)'].pct_change() * 100
+
+# Memasukkan Data TFP (A) Historis
+tfp_data = {
+    '1987': -1.774, '1988': -2.231, '1989': -0.184, '1990': 0.516, '1991': 1.961,
+    '1992': 1.422, '1993': 1.698, '1994': -0.742, '1995': 1.255, '1996': 0.573,
+    '1997': -2.124, '1998': -17.485, '1999': -2.138, '2000': 1.221, '2001': 0.001,
+    '2002': 2.072, '2003': 1.094, '2004': 0.910, '2005': 2.432, '2006': 1.731,
+    '2007': 0.594, '2008': 1.113, '2009': 0.212, '2010': 0.914, '2011': 3.062,
+    '2012': 1.944, '2013': 4.259, '2014': -0.479, '2015': 0.438, '2016': 1.666,
+    '2017': 1.183, '2018': 1.950, '2019': 0.194, '2020': -2.721, '2021': 1.980,
+    '2022': -0.958, '2023': 0.515
+}
+df['TFP Growth (%)'] = df['Tahun'].map(tfp_data)
+
 # ==========================================
 # 3. HEADER & PENJELASAN METODE
 # ==========================================
@@ -116,20 +132,46 @@ st.dataframe(
         'Penduduk Bekerja (L)': '{:,.0f}',
         'PDB Growth (%)': '{:.2f}',
         'Nilai PDB (Y) (basis 1986=100)': '{:.2f}',
-        'Pembentukan Modal Tetap Bruto (K)': '{:,.0f}'
+        'Pembentukan Modal Tetap Bruto (K)': '{:,.0f}',
+        'Pertumbuhan Pekerja (%)': '{:.2f}',
+        'TFP Growth (%)': '{:.3f}'
     }), 
     height=250, 
     use_container_width=True
 )
 
-st.write("### Plot Korelasi Data")
-st.write("Grafik Sebar (*Scatter Plot*) ini menunjukkan korelasi sangat kuat ($R^2 = 0.987$) antara logaritma PDB dan logaritma Tenaga Kerja historis.")
+col_grafik1, col_grafik2 = st.columns(2)
 
-fig = px.scatter(df, x='ln Y', y='ln L', hover_data=['Tahun'], 
-                 trendline="ols", trendline_color_override="red",
-                 labels={'ln Y': 'Log Indeks PDB (ln Y)', 'ln L': 'Log Penduduk Bekerja (ln L)'})
-fig.update_layout(xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), margin=dict(l=20, r=20, t=30, b=20))
-st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+with col_grafik1:
+    st.write("#### Plot Korelasi Data (Regresi)")
+    st.write("Korelasi sangat kuat ($R^2 = 0.987$) antara log PDB dan log Tenaga Kerja.")
+    fig = px.scatter(df, x='ln Y', y='ln L', hover_data=['Tahun'], 
+                     trendline="ols", trendline_color_override="red",
+                     labels={'ln Y': 'Log Indeks PDB (ln Y)', 'ln L': 'Log Penduduk Bekerja (ln L)'})
+    fig.update_layout(xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), margin=dict(l=20, r=20, t=30, b=20))
+    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
+with col_grafik2:
+    st.write("#### Tren Historis: PDB, Pekerja, & Efisiensi (TFP)")
+    st.write("Melihat pergerakan %ΔY, %ΔL, dan %ΔA secara bersamaan (1987-2023).")
+    
+    # Filter data hanya untuk tahun yang ada TFP-nya
+    df_plot = df.dropna(subset=['TFP Growth (%)']).copy()
+    
+    fig_tren = go.Figure()
+    # Line PDB
+    fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['PDB Growth (%)'], mode='lines+markers', name='PDB Growth (%)', line=dict(color='green', width=3)))
+    # Line TFP
+    fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['TFP Growth (%)'], mode='lines+markers', name='Inovasi/TFP (%)', line=dict(color='red', width=2, dash='dot')))
+    # Line Pekerja
+    fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['Pertumbuhan Pekerja (%)'], mode='lines', name='Pertumbuhan L (%)', line=dict(color='blue', width=2)))
+    
+    # Anotasi Krisis
+    fig_tren.add_annotation(x='1998', y=-17.485, text="Krisis '98", showarrow=True, arrowhead=1, ax=20, ay=-20, font=dict(color="red"))
+    fig_tren.add_annotation(x='2020', y=-2.721, text="Pandemi '20", showarrow=True, arrowhead=1, ax=20, ay=-30, font=dict(color="red"))
+    
+    fig_tren.update_layout(yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True), legend=dict(orientation="h", ybottom=-0.2), margin=dict(l=20, r=20, t=30, b=20))
+    st.plotly_chart(fig_tren, use_container_width=True, config={'displayModeBar': False})
 
 st.markdown("---")
 
@@ -147,7 +189,6 @@ st.write("Jika suatu negara menargetkan membuka X juta lapangan kerja baru, bera
 
 col_calc1, col_calc2 = st.columns(2)
 with col_calc1:
-    # LABEL DIUBAH AGAR LEBIH JELAS
     target_pekerja_str = st.text_input("Target Lapangan Kerja Baru (Jiwa) - [Agregat netto vs tahun sebelumnya]:", value="5.000.000")
     try:
         target_pekerja = int(target_pekerja_str.replace('.', ''))
@@ -180,7 +221,6 @@ st.markdown("---")
 st.subheader("2. Kalkulator Kontribusi Pekerja ke PDB")
 st.write("Jika terserap sekian juta lapangan kerja, seberapa besar **efek murni** dorongannya menaikkan PDB nasional?")
 
-# LABEL DIUBAH AGAR LEBIH JELAS
 tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa) - [Agregat netto vs tahun sebelumnya]:", value="5.000.000")
 try:
     tambahan_pekerja = int(tambahan_pekerja_str.replace('.', ''))
@@ -246,7 +286,6 @@ with col_sim2:
 with col_sim3:
     st.markdown("**3. Keran Teknologi/TFP (A)**")
     pertumbuhan_a = st.number_input("Injeksi Efisiensi & Inovasi (%):", value=1.00, step=0.1)
-    # Menambahkan caption panduan di bawah input
     st.caption("💡 Normal RI: 0,5% - 1,2%. Isi lebih tinggi jika ada skenario gebrakan reformasi birokrasi atau digitalisasi.")
     st.caption(f"Kontribusi ke PDB: {pertumbuhan_a:.2f}%")
 
