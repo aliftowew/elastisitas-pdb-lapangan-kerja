@@ -203,6 +203,58 @@ fig_bar = go.Figure(data=[
 fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terhadap Output", yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
 st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
 
+st.markdown("---")
+
+st.subheader("3. Simulasi Lengkap: Pekerja + Modal + Teknologi (Growth Accounting)")
+st.write("Bagaimana jika pemerintah melakukan manuver ganda? Simulasi ini menghitung total pertumbuhan PDB jika kita menyuntikkan pekerja baru, menarik investasi modal, dan meningkatkan teknologi secara bersamaan.")
+
+# Catatan: Nilai elastisitas ini bisa disesuaikan dengan regresi empiris Anda
+ALPHA = 0.40  # Asumsi elastisitas modal (contoh teoretis)
+BETA = 1.7311 # Elastisitas pekerja (dari regresi empiris kita)
+
+col_sim1, col_sim2, col_sim3 = st.columns(3)
+
+with col_sim1:
+    st.markdown("**1. Keran Tenaga Kerja (L)**")
+    pertumbuhan_l = st.number_input("Pertumbuhan Pekerja Baru (%):", value=2.00, step=0.1)
+    st.caption(f"Kontribusi ke PDB: {pertumbuhan_l * BETA:.2f}%")
+
+with col_sim2:
+    st.markdown("**2. Keran Investasi/Modal (K)**")
+    pertumbuhan_k = st.number_input("Pertumbuhan Modal Baru (%):", value=5.00, step=0.1)
+    st.caption(f"Kontribusi ke PDB: {pertumbuhan_k * ALPHA:.2f}%")
+
+with col_sim3:
+    st.markdown("**3. Keran Teknologi/TFP (A)**")
+    pertumbuhan_a = st.number_input("Injeksi Efisiensi & Inovasi (%):", value=1.50, step=0.1)
+    st.caption(f"Kontribusi ke PDB: {pertumbuhan_a:.2f}%")
+
+# Tombol Eksekusi
+st.button("Jalankan Simulasi Total PDB")
+
+# Kalkulasi Total
+total_growth_pdb = pertumbuhan_a + (ALPHA * pertumbuhan_k) + (BETA * pertumbuhan_l)
+
+st.success(f"🚀 **HASIL SIMULASI:** Dengan kombinasi ketiga kebijakan di atas, PDB Indonesia diproyeksikan akan tumbuh sebesar **{total_growth_pdb:.2f}%**.")
+
+# Visualisasi Komposisi (Waterfall / Bar Chart)
+fig_komposisi = go.Figure(go.Waterfall(
+    name="20", orientation="v",
+    measure=["relative", "relative", "relative", "total"],
+    x=["Dorongan Pekerja", "Dorongan Modal", "Dorongan Teknologi", "TOTAL PDB GROWTH"],
+    textposition="outside",
+    text=[f"+{pertumbuhan_l * BETA:.2f}%", f"+{pertumbuhan_k * ALPHA:.2f}%", f"+{pertumbuhan_a:.2f}%", f"{total_growth_pdb:.2f}%"],
+    y=[pertumbuhan_l * BETA, pertumbuhan_k * ALPHA, pertumbuhan_a, total_growth_pdb],
+    connector={"line":{"color":"rgb(63, 63, 63)"}},
+))
+fig_komposisi.update_layout(
+    title="Komposisi Mesin Penggerak Ekonomi",
+    showlegend=False,
+    yaxis_title="Persentase Pertumbuhan PDB (%)",
+    xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True)
+)
+st.plotly_chart(fig_komposisi, use_container_width=True, config={'displayModeBar': False})
+
 # ==========================================
 # 7. INJEKSI CSS UNTUK FOOTER DENGAN BACKGROUND LOKAL
 # ==========================================
