@@ -17,7 +17,7 @@ def format_indo(angka):
 # ==========================================
 # 2. DATASET HISTORIS (1986-2025)
 # ==========================================
-data_mentah = """Tahun	PDB Growth (%)	Penduduk Bekerja (L)	Nilai PDB (Y) (basis 1986=100)	Pembentukan Modal Tetap Bruto (K)	ln Y	ln L	ln K
+data_mentah = """Tahun	Pertumbuhan Ekonomi (%)	Penduduk Bekerja (L)	Nilai PDB (Y) (basis 1986=100)	Pembentukan Modal Tetap Bruto (K)	ln Y	ln L	ln K
 1986	5,88	65655030	105,88	26,2	4,6623	17,9999	3,2657
 1987	4,93	67878350	111,10	31,42	4,7104	18,0332	3,4474
 1988	5,78	69828230	117,52	38,36	4,7666	18,0615	3,6470
@@ -78,10 +78,10 @@ tfp_data = {
 }
 df['TFP Growth (%)'] = df['Tahun'].map(tfp_data)
 
-# Mengatur urutan kolom agar TFP Growth berada tepat di sebelah PDB Growth
+# Mengatur urutan kolom agar TFP Growth berada tepat di sebelah Pertumbuhan Ekonomi
 kolom_urut = [
     'Tahun', 
-    'PDB Growth (%)', 
+    'Pertumbuhan Ekonomi (%)', 
     'TFP Growth (%)', 
     'Penduduk Bekerja (L)', 
     'Pertumbuhan Pekerja (%)', 
@@ -94,8 +94,8 @@ df = df[kolom_urut]
 # ==========================================
 # 3. HEADER & PENJELASAN METODE
 # ==========================================
-st.title("Dashboard Elastisitas PDB & Tenaga Kerja Indonesia 🇮🇩")
-st.write("Analisis data historis (1986-2025) untuk mengukur hubungan dua arah antara Pertumbuhan Ekonomi (PDB) dan Serapan Tenaga Kerja.")
+st.title("Dashboard Elastisitas Pertumbuhan Ekonomi & Tenaga Kerja Indonesia 🇮🇩")
+st.write("Analisis data historis (1986-2025) untuk mengukur hubungan dua arah antara laju Pertumbuhan Ekonomi dan Serapan Tenaga Kerja.")
 
 st.markdown("---")
 st.header("Metodologi & Rumus Pendekatan")
@@ -108,20 +108,20 @@ col_teori1, col_teori2 = st.columns(2)
 
 with col_teori1:
     st.subheader("1. Sisi Permintaan (Kebutuhan Pekerja)")
-    st.write("Mengukur *efek murni* berapa banyak lapangan kerja yang dibutuhkan untuk menumbuhkan PDB secara spesifik, dengan mengasumsikan faktor mesin/investasi konstan:")
+    st.write("Mengukur *efek murni* berapa banyak lapangan kerja yang dibutuhkan untuk mencapai target pertumbuhan ekonomi, dengan mengasumsikan faktor investasi konstan:")
     st.latex(r"\ln L = c_0 + \beta_{inv} \ln Y + \alpha_{inv} \ln K")
     st.markdown("""
     * **L** = Jumlah Penduduk Bekerja
     * **Y** = Indeks PDB
     * **K** = Kapital / Investasi Mesin
-    * **β_inv** = Elastisitas PDB terhadap Pekerja (**0,3966**)
+    * **β_inv** = Elastisitas Pertumbuhan Ekonomi terhadap Pekerja (**0,3966**)
     
-    **Kesimpulan:** Secara teori, setiap menargetkan pertumbuhan 1% PDB membutuhkan **0,397%** lapangan kerja baru (asumsi *ceteris paribus*).
+    **Kesimpulan:** Secara teori, setiap menargetkan **1% pertumbuhan ekonomi** membutuhkan **0,397%** lapangan kerja baru (asumsi *ceteris paribus*).
     """)
 
 with col_teori2:
-    st.subheader("2. Sisi Penawaran (Sumbangan ke PDB)")
-    st.write("Mengukur *efek murni* kontribusi tenaga kerja terhadap penciptaan PDB. Menggunakan Fungsi Produksi log-linier berganda:")
+    st.subheader("2. Sisi Penawaran (Sumbangan ke Ekonomi)")
+    st.write("Mengukur *efek murni* kontribusi tenaga kerja terhadap penciptaan pertumbuhan ekonomi. Menggunakan Fungsi Produksi log-linier berganda:")
     st.latex(r"\ln Y = \ln A + \alpha \ln K + \beta \ln L")
     st.markdown("""
     * **L** = Jumlah Penduduk Bekerja
@@ -129,7 +129,7 @@ with col_teori2:
     * **K** = Kapital / Investasi Mesin
     * **β** = Elastisitas Output Tenaga Kerja (**1,7311**)
     
-    **Kesimpulan:** Setiap penambahan 1% jumlah pekerja berkontribusi menaikkan PDB sebesar **1,7311%** (asumsi *ceteris paribus*).
+    **Kesimpulan:** Setiap penambahan 1% jumlah pekerja berkontribusi menggerakkan pertumbuhan ekonomi sebesar **1,7311%** (asumsi *ceteris paribus*).
     """)
 
 st.markdown("---")
@@ -143,7 +143,7 @@ st.write("Tabel di bawah mencakup data historis Indonesia, termasuk nilai **TFP 
 # Menampilkan tabel dengan urutan kolom yang baru
 st.dataframe(
     df.style.format({
-        'PDB Growth (%)': '{:.2f}',
+        'Pertumbuhan Ekonomi (%)': '{:.2f}',
         'TFP Growth (%)': '{:.3f}', # Menampilkan 3 desimal untuk presisi inovasi
         'Penduduk Bekerja (L)': '{:,.0f}',
         'Pertumbuhan Pekerja (%)': '{:.2f}',
@@ -166,15 +166,15 @@ with col_grafik1:
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 with col_grafik2:
-    st.write("#### Tren Historis: PDB, Pekerja, & Inovasi (TFP)")
+    st.write("#### Tren Historis: Ekonomi, Pekerja, & Inovasi (TFP)")
     st.write("Melihat pergerakan %ΔY, %ΔL, dan %ΔA secara bersamaan (1987-2023).")
     
     # Filter data hanya untuk tahun yang ada TFP-nya agar grafik tidak terputus
     df_plot = df.dropna(subset=['TFP Growth (%)']).copy()
     
     fig_tren = go.Figure()
-    # Line PDB
-    fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['PDB Growth (%)'], mode='lines+markers', name='PDB Growth (%)', line=dict(color='green', width=3)))
+    # Line PDB Growth -> Pertumbuhan Ekonomi
+    fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['Pertumbuhan Ekonomi (%)'], mode='lines+markers', name='Pertumbuhan Ekonomi (%)', line=dict(color='green', width=3)))
     # Line TFP (A)
     fig_tren.add_trace(go.Scatter(x=df_plot['Tahun'], y=df_plot['TFP Growth (%)'], mode='lines+markers', name='Inovasi/TFP (%)', line=dict(color='red', width=2, dash='dot')))
     # Line Pekerja
@@ -199,7 +199,7 @@ ELASTISITAS_Y_TO_L = 0.3966437  # Metode 3: Beta Demand Side Cobb-Douglas
 st.header("🧮 Kalkulator Simulasi Kebijakan")
 
 st.subheader("1. Kalkulator Target Lapangan Kerja (Metode CAGR)")
-st.write("Jika suatu negara menargetkan membuka X juta lapangan kerja baru, berapa persen **efek murni** PDB harus ditumbuhkan setiap tahunnya? *(Tanpa bantuan penambahan mesin/investasi)*")
+st.write("Jika suatu negara menargetkan membuka X juta lapangan kerja baru, berapa persen **efek murni** pertumbuhan ekonomi yang harus dicapai setiap tahunnya? *(Tanpa bantuan penambahan mesin/investasi)*")
 
 col_calc1, col_calc2 = st.columns(2)
 with col_calc1:
@@ -213,27 +213,27 @@ with col_calc2:
     tahun_target = st.number_input("Waktu Pencapaian (Tahun):", min_value=1, value=1, step=1)
 
 # Tombol kosmetik
-st.button("Hitung Kebutuhan PDB & Buat Grafik Proyeksi")
+st.button("Hitung Target Pertumbuhan Ekonomi")
 
 # Kalkulasi
 persen_target_pekerja = (target_pekerja / BASE_PEKERJA_2025)
 total_pdb_dibutuhkan = persen_target_pekerja / ELASTISITAS_Y_TO_L
 cagr_pdb = ((1 + total_pdb_dibutuhkan) ** (1 / tahun_target)) - 1
 
-st.success(f"📌 Untuk menciptakan **{format_indo(target_pekerja)}** lapangan kerja murni dari pertumbuhan (tanpa disubstitusi investasi baru) dalam **{tahun_target} tahun**, PDB Indonesia harus tumbuh konsisten sebesar **{cagr_pdb * 100:.2f}% per tahun**.")
+st.success(f"📌 Untuk menciptakan **{format_indo(target_pekerja)}** lapangan kerja murni dari pertumbuhan (tanpa disubstitusi investasi baru) dalam **{tahun_target} tahun**, ekonomi Indonesia harus tumbuh konsisten sebesar **{cagr_pdb * 100:.2f}% per tahun**.")
 
 tahun_list = [f"Tahun {i}" for i in range(tahun_target + 1)]
 proyeksi_pdb = [100 * ((1 + cagr_pdb) ** i) for i in range(tahun_target + 1)]
 
 fig_cagr = go.Figure()
-fig_cagr.add_trace(go.Scatter(x=tahun_list, y=proyeksi_pdb, mode='lines+markers', name='Proyeksi PDB', line=dict(color='green', width=3)))
-fig_cagr.update_layout(title=f"Proyeksi Eksponensial PDB ({cagr_pdb * 100:.2f}% per tahun)", yaxis_title="Indeks PDB (Tahun 0 = 100)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
+fig_cagr.add_trace(go.Scatter(x=tahun_list, y=proyeksi_pdb, mode='lines+markers', name='Proyeksi Indeks Ekonomi', line=dict(color='green', width=3)))
+fig_cagr.update_layout(title=f"Proyeksi Eksponensial Laju Ekonomi ({cagr_pdb * 100:.2f}% per tahun)", yaxis_title="Indeks Pertumbuhan (Tahun 0 = 100)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
 st.plotly_chart(fig_cagr, use_container_width=True, config={'displayModeBar': False})
 
 st.markdown("---")
 
-st.subheader("2. Kalkulator Kontribusi Pekerja ke PDB")
-st.write("Jika terserap sekian juta lapangan kerja, seberapa besar **efek murni** dorongannya menaikkan PDB nasional?")
+st.subheader("2. Kalkulator Kontribusi Pekerja ke Pertumbuhan Ekonomi")
+st.write("Jika terserap sekian juta lapangan kerja, seberapa besar **efek murni** dorongannya untuk menaikkan pertumbuhan ekonomi nasional?")
 
 tambahan_pekerja_str = st.text_input("Jumlah Pekerja Baru (Jiwa) - [Agregat netto vs tahun sebelumnya]:", value="5.000.000")
 try:
@@ -248,11 +248,11 @@ st.button("Hitung Kontribusi & Lihat Bar Chart")
 persen_kenaikan = tambahan_pekerja / BASE_PEKERJA_2025
 dampak_pdb = persen_kenaikan * ELASTISITAS_L_TO_Y
 
-st.info(f"📌 Masuknya **{format_indo(tambahan_pekerja)}** pekerja baru (pertumbuhan tenaga kerja **{persen_kenaikan * 100:.3f}%**) akan memberikan efek murni pada pertumbuhan PDB sebesar **{dampak_pdb * 100:.3f}%** (ceteris paribus).")
+st.info(f"📌 Masuknya **{format_indo(tambahan_pekerja)}** pekerja baru (pertumbuhan tenaga kerja **{persen_kenaikan * 100:.3f}%**) akan memberikan efek murni pada laju pertumbuhan ekonomi sebesar **{dampak_pdb * 100:.3f}%** (ceteris paribus).")
 
 fig_bar = go.Figure(data=[
     go.Bar(name='Pertumbuhan Pekerja (%)', x=['Indikator'], y=[persen_kenaikan * 100], marker_color='blue'),
-    go.Bar(name='Sumbangan murni ke PDB (%)', x=['Indikator'], y=[dampak_pdb * 100], marker_color='orange')
+    go.Bar(name='Sumbangan murni ke Pertumbuhan Ekonomi (%)', x=['Indikator'], y=[dampak_pdb * 100], marker_color='orange')
 ])
 fig_bar.update_layout(barmode='group', title="Efek Multiplier Tenaga Kerja terhadap Output", yaxis_title="Persentase (%)", xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True))
 st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
@@ -260,25 +260,25 @@ st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': Fal
 st.markdown("---")
 
 st.subheader("3. Simulasi Lengkap: Pekerja + Modal + Teknologi (Growth Accounting)")
-st.write("Simulasi ini menggunakan kerangka **Growth Accounting** untuk memproyeksikan total pertumbuhan PDB jika pemerintah memacu tiga mesin utama secara bersamaan.")
+st.write("Simulasi ini menggunakan kerangka **Growth Accounting** untuk memproyeksikan total pertumbuhan ekonomi jika pemerintah memacu tiga mesin utama secara bersamaan.")
 
 # Memasukkan Rumus dengan LaTeX
 st.latex(r"\% \Delta Y = \% \Delta A + (\alpha \times \% \Delta K) + (\beta \times \% \Delta L)")
 
-# Menggunakan Expander agar tampilan tetap rapi, sekarang dengan panduan menentukan nilai A
+# Menggunakan Expander agar tampilan tetap rapi
 with st.expander("💡 Klik untuk Penjelasan Rumus & Cara Menentukan Nilai Teknologi (A)"):
     st.markdown("""
     Persamaan di atas adalah bentuk dinamis (pertumbuhan) dari model Cobb-Douglas. Berikut penjelasannya:
-    * **% ΔY (Pertumbuhan PDB):** Kecepatan laju ekonomi nasional secara keseluruhan.
+    * **% ΔY (Pertumbuhan Ekonomi):** Kecepatan laju ekonomi nasional secara keseluruhan.
     * **% ΔK (Pertumbuhan Modal):** Injeksi investasi, mesin, dan infrastruktur baru.
     * **% ΔL (Pertumbuhan Pekerja):** Serapan lapangan kerja baru.
-    * **% ΔA (Pertumbuhan TFP / Inovasi):** Mengukur *kecepatan* inovasi dan efisiensi tahun ini (Total Factor Productivity). Ini ibarat **"Tombol Turbo"** yang mampu melipatgandakan *output* produksi PDB secara ajaib, meskipun jumlah mesin dan manusianya tidak ditambah.
+    * **% ΔA (Pertumbuhan TFP / Inovasi):** Mengukur *kecepatan* inovasi dan efisiensi tahun ini (Total Factor Productivity). Ini ibarat **"Tombol Turbo"** yang mampu melipatgandakan *output* produksi secara ajaib, meskipun jumlah mesin dan manusianya tidak ditambah.
     
     **Lalu, angka berapa yang harus saya masukkan ke Keran Teknologi (A)?**
     Karena wujudnya tidak berupa fisik barang/orang, di meja perumusan kebijakan, angka ini ditetapkan lewat tiga skenario:
     1. **Skenario Historis (Normal):** Secara historis (data Bank Dunia/APO), efisiensi ekonomi Indonesia rata-rata hanya bertumbuh **0,5% hingga 1,2% per tahun**. Gunakan kisaran angka ini jika pemerintah berjalan normal (*Business as Usual*).
     2. **Skenario Target Kebijakan (Optimis):** Jika pemerintah melakukan gebrakan masif (seperti digitalisasi birokrasi, penurunan ICOR akibat jalan tol, adopsi AI, dan pemberantasan korupsi), Anda bisa mengasumsikan efisiensi akan melesat ke angka **2,00% atau lebih**.
-    3. **Skenario "Sisa Target":** Jika Presiden menargetkan PDB wajib 8%, sementara kemampuan rekrutmen pekerja dan investasi sudah mentok, silakan naikkan terus angka keran (A) ini sampai hasil akhir menyentuh 8%. Angka (A) yang ditemukan tersebut menjadi beban tugas mutlak bagi kementerian terkait inovasi, riset, dan efisiensi birokrasi!
+    3. **Skenario "Sisa Target":** Jika Presiden menargetkan Pertumbuhan Ekonomi wajib 8%, sementara kemampuan rekrutmen pekerja dan investasi sudah mentok, silakan naikkan terus angka keran (A) ini sampai hasil akhir menyentuh 8%. Angka (A) yang ditemukan tersebut menjadi beban tugas mutlak bagi kementerian terkait inovasi, riset, dan efisiensi birokrasi!
     """)
 
 # Catatan: Nilai elastisitas
@@ -290,32 +290,32 @@ col_sim1, col_sim2, col_sim3 = st.columns(3)
 with col_sim1:
     st.markdown("**1. Keran Tenaga Kerja (L)**")
     pertumbuhan_l = st.number_input("Pertumbuhan Pekerja Baru (%):", value=2.00, step=0.1)
-    st.caption(f"Kontribusi ke PDB: {pertumbuhan_l * BETA:.2f}%")
+    st.caption(f"Dorongan ke Ekonomi: {pertumbuhan_l * BETA:.2f}%")
 
 with col_sim2:
     st.markdown("**2. Keran Investasi/Modal (K)**")
     pertumbuhan_k = st.number_input("Pertumbuhan Modal Baru (%):", value=5.00, step=0.1)
-    st.caption(f"Kontribusi ke PDB: {pertumbuhan_k * ALPHA:.2f}%")
+    st.caption(f"Dorongan ke Ekonomi: {pertumbuhan_k * ALPHA:.2f}%")
 
 with col_sim3:
     st.markdown("**3. Keran Teknologi/TFP (A)**")
     pertumbuhan_a = st.number_input("Injeksi Efisiensi & Inovasi (%):", value=1.00, step=0.1)
     st.caption("💡 Normal RI: 0,5% - 1,2%. Isi lebih tinggi jika ada skenario gebrakan reformasi birokrasi atau digitalisasi.")
-    st.caption(f"Kontribusi ke PDB: {pertumbuhan_a:.2f}%")
+    st.caption(f"Dorongan ke Ekonomi: {pertumbuhan_a:.2f}%")
 
 # Tombol Eksekusi
-st.button("Jalankan Simulasi Total PDB")
+st.button("Jalankan Simulasi Pertumbuhan Ekonomi")
 
 # Kalkulasi Total
 total_growth_pdb = pertumbuhan_a + (ALPHA * pertumbuhan_k) + (BETA * pertumbuhan_l)
 
-st.success(f"🚀 **HASIL SIMULASI:** Dengan kombinasi ketiga bauran kebijakan di atas, PDB Indonesia diproyeksikan akan melesat tumbuh sebesar **{total_growth_pdb:.2f}%**.")
+st.success(f"🚀 **HASIL SIMULASI:** Dengan kombinasi ketiga bauran kebijakan di atas, pertumbuhan ekonomi Indonesia diproyeksikan akan melesat sebesar **{total_growth_pdb:.2f}%**.")
 
 # Visualisasi Komposisi (Waterfall / Bar Chart)
 fig_komposisi = go.Figure(go.Waterfall(
     name="20", orientation="v",
     measure=["relative", "relative", "relative", "total"],
-    x=["Dorongan Pekerja (L)", "Dorongan Modal (K)", "Dorongan Teknologi (A)", "TOTAL PDB GROWTH"],
+    x=["Dorongan Pekerja (L)", "Dorongan Modal (K)", "Dorongan Teknologi (A)", "TOTAL PERTUMBUHAN EKONOMI"],
     textposition="outside",
     text=[f"+{pertumbuhan_l * BETA:.2f}%", f"+{pertumbuhan_k * ALPHA:.2f}%", f"+{pertumbuhan_a:.2f}%", f"{total_growth_pdb:.2f}%"],
     y=[pertumbuhan_l * BETA, pertumbuhan_k * ALPHA, pertumbuhan_a, total_growth_pdb],
@@ -324,7 +324,7 @@ fig_komposisi = go.Figure(go.Waterfall(
 fig_komposisi.update_layout(
     title="Komposisi Mesin Penggerak Ekonomi",
     showlegend=False,
-    yaxis_title="Persentase Pertumbuhan PDB (%)",
+    yaxis_title="Persentase Pertumbuhan Ekonomi (%)",
     xaxis=dict(fixedrange=True), yaxis=dict(fixedrange=True)
 )
 st.plotly_chart(fig_komposisi, use_container_width=True, config={'displayModeBar': False})
